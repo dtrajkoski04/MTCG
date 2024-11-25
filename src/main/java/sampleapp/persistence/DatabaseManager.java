@@ -12,8 +12,8 @@ public enum DatabaseManager {
         try {
             return DriverManager.getConnection(
                     "jdbc:postgresql://localhost:5432/MTCG",
-                    "superuser",
-                    "superpassword");
+                    "MTCG",
+                    "MTCG");
         } catch (SQLException e) {
             throw new DataAccessException("Datenbankverbindungsaufbau nicht erfolgreich", e);
         }
