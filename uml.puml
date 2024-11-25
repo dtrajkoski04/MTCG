@@ -1,0 +1,123 @@
+@startuml
+title Monster Trading Cards Game (MCTG) - UML Diagram
+
+package "httpserver" {
+    package "http" {
+        enum ContentType {
+            PLAIN_TEXT
+            HTML
+            JSON
+        }
+        enum HttpStatus {
+            OK
+            CREATED
+            ACCEPTED
+            NO_CONTENT
+            BAD_REQUEST
+            UNAUTHORIZED
+            FORBIDDEN
+            NOT_FOUND
+            CONFLICT
+            INTERNAL_SERVER_ERROR
+            NOT_IMPLEMENTED
+        }
+        enum Method {
+            GET
+            POST
+            PUT
+            PATCH
+            DELETE
+        }
+    }
+
+    package "server" {
+        class HeaderMap {
+            +ingest(headerLine: String)
+            +getHeader(headerName: String): String
+            +getContentLength(): int
+            +print()
+        }
+
+        class Request {
+            +getServiceRoute(): String
+            +getUrlContent(): String
+            +setUrlContent(urlContent: String)
+            +getMethod(): Method
+            +setMethod(method: Method)
+            +getPathname(): String
+            +setPathname(pathname: String)
+            +getParams(): String
+            +setParams(params: String)
+            +getHeaderMap(): HeaderMap
+            +setHeaderMap(headerMap: HeaderMap)
+            +getBody(): String
+            +setBody(body: String)
+            +getPathParts(): List<String>
+            +setPathParts(pathParts: List<String>)
+        }
+
+        class Response {
+            +Response(httpStatus: HttpStatus, contentType: ContentType, content: String)
+            +get(): String
+        }
+
+        class Server {
+            +Server(port: int, router: Router)
+            +start()
+        }
+
+        interface Service {
+            +handleRequest(request: Request): Response
+        }
+    }
+
+    package "utils" {
+        class RequestBuilder {
+            +buildRequest(bufferedReader: BufferedReader): Request
+        }
+
+        class RequestHandler {
+            +RequestHandler(clientSocket: Socket, router: Router)
+            +run()
+        }
+
+        class Router {
+            +addService(route: String, service: Service)
+            +removeService(route: String)
+            +resolve(route: String): Service
+        }
+    }
+}
+
+package "application" {
+
+    package "model" {
+        abstract class Card {
+        }
+
+        class MonsterCard extends Card {
+        }
+
+        class SpellCard extends Card {
+        }
+
+        class Deck {
+        }
+
+        class GameStats {
+        }
+
+        class Package {
+        }
+
+        class TradeDeal {
+        }
+
+        class User {
+            - username: String
+            - password: String
+        }
+    }
+}
+
+@enduml
