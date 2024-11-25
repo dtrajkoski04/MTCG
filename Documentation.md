@@ -85,20 +85,14 @@ The `application` package contains the main business logic and entities for the 
         - `PackageService`: Manages card package creation and purchases.
         - `TradeService`: Facilitates card trading between players.
         - `UserService`: Manages user authentication, profile updates, and stats tracking.
-
----
-
-### dal Package
-
-#### Purpose
-The `dal` (Data Access Layer) package abstracts persistence, allowing the application to interact with the database or in-memory storage without exposing implementation details.
-
-#### Classes and Interfaces
-- `CardRepository`: Manages storage and retrieval of card data.
-- `PackageRepository`: Handles operations related to card packages.
-- `TradeRepository`: Manages trade deals and their conditions.
-- `UserMemoryRepository` (Class and Interface): Facilitates user-related storage in memory, with an interface for potential extension to a database-backed implementation.
-
+- **persistence Subpackage**:
+  - abstracts persistence, allowing the application to interact with the database or in-memory storage without exposing implementation details.
+    - `repository package`: Contains the needed repositories for the different models.
+      - `UserRepository`: Interface for the UserRepositoryImpl.
+      - `UserRepositoryImpl`: Handles the transaction from a User Object to a Database Entry.
+    - `DataAccessException`: Handles database access-related exceptions, encapsulating database-specific errors into a generic exception for higher-level handling.
+    - `DatabaseManager`: Manages database connections, ensuring proper initialization, usage, and cleanup.
+    - `UnitOfWork`: Implements the Unit of Work design pattern, managing transactions and ensuring atomicity for multiple database operations within a single business transaction.
 ---
 
 ### Design Rationale
@@ -112,5 +106,11 @@ This structure provides a robust foundation for building the Monster Trading Car
 
 
 ## Implementation Process
+
+1. Using the given Structure from the `httpserverbase` Structure for the MTCG Project
+2. Testing the Given Structure and Code so the Server runs correctly
+3. Changing the model for the `User` Model to Register/Login with a generated token
+4. Changing the routes for the `REST-API` so the Register/Login can be tested
+5. Changing the used database for storing the Users into the database
 
 ## Testing Strategy

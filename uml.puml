@@ -92,6 +92,11 @@ package "httpserver" {
 package "application" {
 
     package "model" {
+        class User {
+            - username: String
+            - password: String
+        }
+
         abstract class Card {
         }
 
@@ -112,11 +117,41 @@ package "application" {
 
         class TradeDeal {
         }
+    }
 
-        class User {
-            - username: String
-            - password: String
+    package controller {
+        class EchoController {
         }
+
+        class UserController {
+        }
+    }
+
+    package service {
+        abstract class Service {
+        }
+        class UserService {
+        }
+    }
+
+    package persistence {
+        package repository {
+            interface UserRepository {
+            }
+
+            class UserRepositoryImpl {
+            }
+        }
+
+        exception DataAccessException {
+        }
+
+        enum DatabaseManager {
+        }
+
+        class UnitOfWork {
+        }
+
     }
 }
 
