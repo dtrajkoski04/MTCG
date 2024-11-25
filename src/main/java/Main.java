@@ -1,9 +1,7 @@
 
 import httpserver.server.Server;
 import httpserver.utils.Router;
-import sampleapp.controller.EchoController;
 import sampleapp.controller.UserController;
-import sampleapp.controller.WeatherController;
 
 import java.io.IOException;
 
@@ -20,8 +18,6 @@ public class Main {
     private static Router configureRouter()
     {
         Router router = new Router();
-        router.addService("/weather", new WeatherController());
-        router.addService("/echo", new EchoController());
         router.addService("/register", new UserController());
         router.addService("/login", new UserController());
 

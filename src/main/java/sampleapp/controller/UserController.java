@@ -26,8 +26,11 @@ public class UserController implements RestController {
                 request.getPathParts().get(1).equals("login")) {
             return this.userService.login(request);
         } else if (request.getMethod() == Method.POST &&
-                request.getPathname().equals("/register")) { // Direct match for query parameters
+                request.getPathname().equals("/register")) { // Handle query params for register
             return this.userService.register(request);
+        } else if (request.getMethod() == Method.POST &&
+                request.getPathname().equals("/login")) { // Handle query params for login
+            return this.userService.login(request);
         }
 
         return new Response(

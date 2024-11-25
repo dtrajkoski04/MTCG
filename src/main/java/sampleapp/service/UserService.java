@@ -20,7 +20,6 @@ public class UserService extends AbstractService {
         userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
-    // POST /register
     public Response register(Request request) {
         try {
             String username = null;
@@ -45,35 +44,52 @@ public class UserService extends AbstractService {
                 return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username and password are required\"}");
             }
 
-            // Register the user in the repository
-            boolean isRegistered = userRepository.registerUser(username, password);
+            // Register the user and retrieve the generated token
+            String token = userRepository.registerUserAndReturnToken(username, password);
 
-            if (isRegistered) {
-                return new Response(HttpStatus.CREATED, ContentType.JSON, "{\"message\": \"User registered successfully\"}");
+            if (token != null) {
+                // Return the token upon successful registration
+                return new Response(HttpStatus.CREATED, ContentType.JSON, "{\"message\": \"User registered successfully\", \"token\": \"" + token + "\"}");
             } else {
                 return new Response(HttpStatus.CONFLICT, ContentType.JSON, "{\"message\": \"User already exists\"}");
             }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Invalid JSON format\"}");
         } catch (Exception e) {
             e.printStackTrace();
             return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during registration\"}");
         }
     }
 
-    // POST /login
+
+
+    // POST /login or GET /login
     public Response login(Request request) {
         try {
-            Map<String, String> requestData = this.getObjectMapper().readValue(request.getBody(), Map.class);
-            String username = requestData.get("username");
-            String password = requestData.get("password");
-            String token = requestData.get("token");
+            String username = null;
+            String password = null;
+            String token = null;
 
+            // Check for query parameters
+            if (request.getParams() != null && !request.getParams().isEmpty()) {
+                Map<String, String> queryParams = Arrays.stream(request.getParams().split("&"))
+                        .map(s -> s.split("="))
+                        .collect(Collectors.toMap(a -> a[0], a -> a[1]));
+                username = queryParams.get("username");
+                password = queryParams.get("password");
+                token = queryParams.get("token");
+            } else if (request.getBody() != null && !request.getBody().isEmpty()) {
+                // Parse JSON body
+                Map<String, String> requestData = this.getObjectMapper().readValue(request.getBody(), Map.class);
+                username = requestData.get("username");
+                password = requestData.get("password");
+                token = requestData.get("token");
+            }
+
+            // Validate required fields
             if (username == null || password == null || token == null) {
                 return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username, password, and token are required\"}");
             }
 
+            // Validate user credentials and token
             boolean isLoggedIn = userRepository.loginUser(username, password, token);
 
             if (isLoggedIn) {
@@ -81,12 +97,10 @@ public class UserService extends AbstractService {
             } else {
                 return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid credentials or token\"}");
             }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Invalid JSON format\"}");
         } catch (Exception e) {
             e.printStackTrace();
             return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during login\"}");
         }
     }
+
 }

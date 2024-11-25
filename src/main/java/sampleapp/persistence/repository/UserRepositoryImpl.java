@@ -16,9 +16,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public boolean registerUser(String username, String password) throws SQLException {
+    public String registerUserAndReturnToken(String username, String password) throws SQLException {
         String sql = "INSERT INTO users (username, password, token) VALUES (?, ?, ?)";
-        String token = generateToken();
+        String token = generateToken(); // Generate the token here
 
         try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
             pstmt.setString(1, username);
@@ -27,7 +27,12 @@ public class UserRepositoryImpl implements UserRepository {
 
             int rowsAffected = pstmt.executeUpdate();
             unitOfWork.commitTransaction(); // Commit the transaction
-            return rowsAffected > 0;
+
+            if (rowsAffected > 0) {
+                return token; // Return the generated token
+            } else {
+                return null; // Registration failed
+            }
         } catch (SQLException e) {
             unitOfWork.rollbackTransaction(); // Rollback the transaction on failure
             throw new DataAccessException("Failed to register user", e);
