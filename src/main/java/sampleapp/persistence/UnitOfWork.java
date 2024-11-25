@@ -1,5 +1,7 @@
 package sampleapp.persistence;
 
+import sampleapp.persistence.DataAccessException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

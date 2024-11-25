@@ -1,26 +1,22 @@
-package sampleapp.model;
-
-import com.fasterxml.jackson.annotation.JsonAlias;
-
-import java.util.UUID;
-
 public class User {
-    @JsonAlias({"username"})
     private String username;
-
-    @JsonAlias({"password"})
     private String password;
-
-    @JsonAlias({"token"})
     private String token;
 
-    // Constructor for creating a user with a generated token
+    // Constructor for creating a user with no token (e.g., during registration)
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.token = generateToken();
     }
 
+    // Constructor for creating a user with an existing token (e.g., fetched from the database)
+    public User(String username, String password, String token) {
+        this.username = username;
+        this.password = password;
+        this.token = token;
+    }
+
+    // Getters and setters for all fields
     public String getUsername() {
         return username;
     }
@@ -45,11 +41,6 @@ public class User {
         this.token = token;
     }
 
-    // Private method to generate a unique token
-    private String generateToken() {
-        return UUID.randomUUID().toString();
-    }
-
     @Override
     public String toString() {
         return "User{" +
@@ -59,4 +50,3 @@ public class User {
                 '}';
     }
 }
-
