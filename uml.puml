@@ -98,12 +98,18 @@ package "application" {
         }
 
         abstract class Card {
+            - name: String
+            - damage: int
+            - elementType: String
+            + getCardType(): String
         }
 
         class MonsterCard extends Card {
+            + getCardType(): String
         }
 
         class SpellCard extends Card {
+            + getCardType(): String
         }
 
         class Deck {
@@ -180,5 +186,7 @@ UserRepository <|.. UserRepositoryImpl
 UserRepositoryImpl --> UnitOfWork
 UnitOfWork --> DatabaseManager
 DatabaseManager --> DataAccessException
+Card <|-- MonsterCard
+Card <|-- SpellCard
 
 @enduml

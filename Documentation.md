@@ -17,7 +17,7 @@ The Monster Trading Card Game (MCTG) is a REST-based server application built us
 
 ## UML-Diagram
 
-![img_1.png](img_1.png)
+![img.png](img.png)
 
 ## Design Decisions
 
@@ -147,6 +147,25 @@ The User model represents a player in the system. Each user has:
 - A **token** issued upon successful login to manage sessions securely.
 
 This model is central to the server's ability to authenticate and track user sessions during gameplay.
+
+### The Card Model
+
+The Card model serves as the base class for all cards in the system, representing both MonsterCard and SpellCard. This abstraction ensures extensibility and adherence to the specification.
+
+**Attributes**:
+- name: The unique name of the card.
+- damage: A constant value representing the card's attack power.
+- elementType: Indicates the elemental type (e.g., fire, water, normal).
+
+**Card Types**:
+- MonsterCard: Represents cards that are primarily monsters with physical attacks. Element types do not affect pure monster vs. monster battles.
+- SpellCard: Represents cards that use elemental-based spells, allowing for advantages or disadvantages based on elemental interactions.
+
+**Key Features**:
+- Both card types inherit from the Card base class.
+- Abstract methods like getCardType are overridden in subclasses to specify the card type.
+- Extensibility is ensured, allowing additional card-specific behaviors or attributes to be implemented later.
+- Usage in Gameplay: Cards are integral to the battle and trading mechanics, serving as the primary resources players use to compete or trade in the MTCG system.
 
 ### Database Configuration
 
