@@ -19,7 +19,7 @@ public class Main {
     {
         Router router = new Router();
         router.addService("/users", new UserController());
-        router.addService("/session", new UserController());
+        router.addService("/sessions", new UserController());
 
         return router;
     }

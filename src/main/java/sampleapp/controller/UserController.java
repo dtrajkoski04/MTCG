@@ -23,13 +23,13 @@ public class UserController implements RestController {
             return this.userService.register(request);
         } else if (request.getMethod() == Method.POST &&
                 request.getPathParts().size() > 1 &&
-                request.getPathParts().get(1).equals("session")) {
+                request.getPathParts().get(1).equals("sessions")) {
             return this.userService.login(request);
         } else if (request.getMethod() == Method.POST &&
                 request.getPathname().equals("/users")) { // Handle query params for register
             return this.userService.register(request);
         } else if (request.getMethod() == Method.POST &&
-                request.getPathname().equals("/session")) { // Handle query params for login
+                request.getPathname().equals("/sessions")) { // Handle query params for login
             return this.userService.login(request);
         }
 
