@@ -17,7 +17,7 @@ The Monster Trading Card Game (MCTG) is a REST-based server application built us
 
 ## UML-Diagram
 
-![img.png](img.png)
+![img_1.png](img_1.png)
 
 ## Design Decisions
 
@@ -109,8 +109,11 @@ This structure provides a robust foundation for building the Monster Trading Car
 
 1. Using the given Structure from the `httpserverbase` Structure for the MTCG Project
 2. Testing the Given Structure and Code so the Server runs correctly
-3. Changing the model for the `User` Model to Register/Login with a generated token
-4. Changing the routes for the `REST-API` so the Register/Login can be tested
-5. Changing the used database for storing the Users into the database
+3. Connecting the database to the application
+4. Changing the model for the `User` Model to Register/Login with a generated token
+5. Changing the routes for the `REST-API` so the Register/Login can be tested
+6. Changing the used database for storing the Users and tokens into the database
+7. Implementing the curl Script
+8. Changing the Readme
 
 ## Testing Strategy

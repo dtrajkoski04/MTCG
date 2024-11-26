@@ -66,7 +66,7 @@ package "httpserver" {
             +start()
         }
 
-        interface Service {
+        interface RestController {
             +handleRequest(request: Request): Response
         }
     }
@@ -82,19 +82,19 @@ package "httpserver" {
         }
 
         class Router {
-            +addService(route: String, service: Service)
+            +addService(route: String, service: RestController)
             +removeService(route: String)
-            +resolve(route: String): Service
+            +resolve(route: String): RestController
         }
     }
 }
 
 package "application" {
-
     package "model" {
         class User {
             - username: String
             - password: String
+            - token: String
         }
 
         abstract class Card {
@@ -119,40 +119,66 @@ package "application" {
         }
     }
 
-    package controller {
-        class EchoController {
-        }
-
+    package "controller" {
         class UserController {
+            +handleRequest(request: Request): Response
         }
     }
 
-    package service {
-        abstract class Service {
+    package "service" {
+        abstract class AbstractService {
+            +getObjectMapper(): ObjectMapper
         }
         class UserService {
+            +register(request: Request): Response
+            +login(request: Request): Response
         }
     }
 
-    package persistence {
-        package repository {
+    package "persistence" {
+        package "repository" {
             interface UserRepository {
+                +registerUser(username: String, password: String): String
+                +loginUser(username: String, password: String): String
             }
 
             class UserRepositoryImpl {
+                +registerUser(username: String, password: String): String
+                +loginUser(username: String, password: String): String
             }
         }
 
-        exception DataAccessException {
-        }
-
-        enum DatabaseManager {
+        class DataAccessException {
         }
 
         class UnitOfWork {
+            +commitTransaction()
+            +rollbackTransaction()
+            +prepareStatement(sql: String): PreparedStatement
         }
 
+        enum DatabaseManager {
+            +getConnection(): Connection
+        }
     }
 }
+
+' Relationships
+Router -> RestController
+RestController <|.. UserController
+Server --> Router
+RequestHandler --> RequestBuilder
+RequestHandler --> Router
+RequestBuilder --> Request
+Request --> HeaderMap
+Response --> HttpStatus
+Response --> ContentType
+UserController --> UserService
+UserService --> AbstractService
+UserService --> UserRepository
+UserRepository <|.. UserRepositoryImpl
+UserRepositoryImpl --> UnitOfWork
+UnitOfWork --> DatabaseManager
+DatabaseManager --> DataAccessException
 
 @enduml
