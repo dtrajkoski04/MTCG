@@ -116,4 +116,83 @@ This structure provides a robust foundation for building the Monster Trading Car
 7. Implementing the curl Script
 8. Changing the Readme
 
+## Intermediate Hand-In
+### Overview
+
+This intermediate submission focuses on the foundational implementation of the MTCG server. Key achievements include setting up a REST API server, configuring the database for user data storage, and ensuring that users can securely register and log in.
+
+### Implemented Features
+
+**Technology Stack**:
+   
+- The application is implemented in Java.
+No HTTP helper frameworks were used, adhering to the project's requirements.
+Server Setup:
+
+- A custom HTTP server was built to listen for client connections on a defined port.
+It includes mechanisms for parsing HTTP requests, managing headers, handling query parameters, and processing request bodies.
+Core Features:
+
+**User Registration**: Enables users to register with unique usernames and passwords.
+
+**User Login**: Validates user credentials and issues session tokens for authentication.
+**Routing**: A routing mechanism maps incoming requests to appropriate controllers based on URL paths.
+
+### The User Model
+
+The User model represents a player in the system. Each user has:
+
+- A **username** that uniquely identifies them.
+- A **password** for authentication.
+- A **token** issued upon successful login to manage sessions securely.
+
+This model is central to the server's ability to authenticate and track user sessions during gameplay.
+
+### Database Configuration
+
+The server uses a PostgreSQL database for persistence. A Docker container was set up to run the database, configured with the following schema:
+
+- **Users Table**: Stores user credentials with a unique username and a password.
+- **User Tokens Table**: Stores session tokens for logged-in users, linked to the corresponding username.
+
+The database is configured to enforce relationships between these tables, ensuring data integrity. For instance:
+
+A user's token is automatically deleted if the user is removed from the system.
+
+### How Users and Tokens Are Stored
+
+**Registration** Process:
+
+When a user registers, their username and password are validated and stored in the database.
+The system ensures that usernames are unique, preventing duplicate entries.
+Login Process:
+
+During **login**, the provided credentials are checked against the database.
+If valid, a session token is generated and stored. Tokens are updated for subsequent logins, ensuring users can only have one active session at a time.
+Session Tokens:
+
+Tokens are uniquely formatted to associate them with the user and session. These tokens allow users to securely perform actions on the server.
+### Challenges and Solutions
+
+Challenge: Storing passwords securely.
+Solution: Passwords are currently stored as plaintext for simplicity, but future improvements will incorporate password hashing techniques.
+Challenge: Efficient database operations.
+Solution: Implemented a transaction management system that ensures efficient database interaction and maintains data consistency.
+
+### Testing and Validation
+
+Endpoints were thoroughly tested using curl commands. Tests included:
+
+- Registering users with various input scenarios to ensure validation works as expected.
+- Logging in with valid and invalid credentials to verify token generation and error handling.
+
+### Summary
+
+This submission successfully delivers the foundational components of the MTCG server, including:
+
+- A custom REST API server with routing and request-handling mechanisms.
+User registration and login functionalities.
+- A well-structured database for secure storage of user credentials and session tokens.
+These features establish a strong basis for expanding the application in the next development phase, incorporating gameplay mechanics, trading, and more advanced functionalities.
+
 ## Testing Strategy
