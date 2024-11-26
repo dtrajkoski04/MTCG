@@ -14,4 +14,26 @@ Getting Started
 
 1. Clone the repository:
    `git clone https://github.com/yourusername/mtcg.git`
-2. Run the `Main.java` Class
+2. Configure the Docker Container:
+   `docker pull postgres:latest`
+   `docker run --name MTCG -e POSTGRES_USER=MTCG -e POSTGRES_PASSWORD=MTCG -e POSTGRES_DB=MTCG -p 5432:5432 -d postgres:latest`
+   `docker exec -it MTCG psql -U MTCG -d MTCG`
+4. Or use your own Docker Container and change the credentials in the `DatabaseManager.java`
+5. Create the tables:
+   ```
+   CREATE TABLE users (
+       id SERIAL PRIMARY KEY,
+       username VARCHAR(255) UNIQUE NOT NULL,
+       password VARCHAR(255) NOT NULL
+   );
+   
+   CREATE TABLE user_tokens (
+       username VARCHAR(255) UNIQUE NOT NULL,
+       token VARCHAR(255) NOT NULL,
+       FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
+   );
+   ```
+6. Run the `Main.java` Class
+7. Run the `ìntegration_tests.sh` script from the root of the Project:
+   `cd src/test/testscripts`
+   `./integration_tests.sh`
