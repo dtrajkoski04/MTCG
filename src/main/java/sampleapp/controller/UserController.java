@@ -19,17 +19,17 @@ public class UserController implements RestController {
     public Response handleRequest(Request request) {
         if (request.getMethod() == Method.POST &&
                 request.getPathParts().size() > 1 &&
-                request.getPathParts().get(1).equals("register")) {
+                request.getPathParts().get(1).equals("users")) {
             return this.userService.register(request);
         } else if (request.getMethod() == Method.POST &&
                 request.getPathParts().size() > 1 &&
-                request.getPathParts().get(1).equals("login")) {
+                request.getPathParts().get(1).equals("session")) {
             return this.userService.login(request);
         } else if (request.getMethod() == Method.POST &&
-                request.getPathname().equals("/register")) { // Handle query params for register
+                request.getPathname().equals("/users")) { // Handle query params for register
             return this.userService.register(request);
         } else if (request.getMethod() == Method.POST &&
-                request.getPathname().equals("/login")) { // Handle query params for login
+                request.getPathname().equals("/session")) { // Handle query params for login
             return this.userService.login(request);
         }
 

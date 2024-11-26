@@ -3,8 +3,8 @@ package sampleapp.persistence.repository;
 import java.sql.SQLException;
 
 public interface UserRepository {
-    String registerUserAndReturnToken(String username, String password) throws SQLException;
-    boolean loginUser(String username, String password, String token) throws SQLException;
+    String registerUser(String username, String password) throws SQLException;
+    String loginUser(String username, String password) throws SQLException;
 }
 
 

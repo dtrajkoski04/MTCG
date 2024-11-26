@@ -44,12 +44,11 @@ public class UserService extends AbstractService {
                 return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username and password are required\"}");
             }
 
-            // Register the user and retrieve the generated token
-            String token = userRepository.registerUserAndReturnToken(username, password);
+            // Register the user
+            String result = userRepository.registerUser(username, password);
 
-            if (token != null) {
-                // Return the token upon successful registration
-                return new Response(HttpStatus.CREATED, ContentType.JSON, "{\"message\": \"User registered successfully\", \"token\": \"" + token + "\"}");
+            if (result != null) {
+                return new Response(HttpStatus.CREATED, ContentType.JSON, "{\"message\": \"" + result + "\"}");
             } else {
                 return new Response(HttpStatus.CONFLICT, ContentType.JSON, "{\"message\": \"User already exists\"}");
             }
@@ -61,12 +60,12 @@ public class UserService extends AbstractService {
 
 
 
+
     // POST /login or GET /login
     public Response login(Request request) {
         try {
             String username = null;
             String password = null;
-            String token = null;
 
             // Check for query parameters
             if (request.getParams() != null && !request.getParams().isEmpty()) {
@@ -75,32 +74,32 @@ public class UserService extends AbstractService {
                         .collect(Collectors.toMap(a -> a[0], a -> a[1]));
                 username = queryParams.get("username");
                 password = queryParams.get("password");
-                token = queryParams.get("token");
             } else if (request.getBody() != null && !request.getBody().isEmpty()) {
                 // Parse JSON body
                 Map<String, String> requestData = this.getObjectMapper().readValue(request.getBody(), Map.class);
                 username = requestData.get("username");
                 password = requestData.get("password");
-                token = requestData.get("token");
             }
 
             // Validate required fields
-            if (username == null || password == null || token == null) {
-                return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username, password, and token are required\"}");
+            if (username == null || password == null) {
+                return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username and password are required\"}");
             }
 
-            // Validate user credentials and token
-            boolean isLoggedIn = userRepository.loginUser(username, password, token);
+            // Attempt login and generate token
+            String token = userRepository.loginUser(username, password);
 
-            if (isLoggedIn) {
-                return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Login successful\"}");
+            if (token != null) {
+                return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Login successful\", \"token\": \"" + token + "\"}");
             } else {
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid credentials or token\"}");
+                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid credentials\"}");
             }
         } catch (Exception e) {
             e.printStackTrace();
             return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during login\"}");
         }
     }
+
+
 
 }
