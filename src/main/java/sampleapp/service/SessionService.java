@@ -8,19 +8,19 @@ import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.repository.UserRepository;
 import sampleapp.persistence.repository.UserRepositoryImpl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class UserService extends AbstractService {
+public class SessionService extends AbstractService {
     private UserRepository userRepository;
 
-    public UserService() {
+    public SessionService() {
         userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
-    public Response register(Request request) {
+    // POST /login or GET /login
+    public Response login(Request request) {
         try {
             String username = null;
             String password = null;
@@ -44,18 +44,17 @@ public class UserService extends AbstractService {
                 return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username and password are required\"}");
             }
 
-            // Register the user
-            String result = userRepository.registerUser(username, password);
+            // Attempt login and generate token
+            String token = userRepository.loginUser(username, password);
 
-            if (result != null) {
-                return new Response(HttpStatus.CREATED, ContentType.JSON, "{\"message\": \"" + result + "\"}");
+            if (token != null) {
+                return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Login successful\", \"token\": \"" + token + "\"}");
             } else {
-                return new Response(HttpStatus.CONFLICT, ContentType.JSON, "{\"message\": \"User already exists\"}");
+                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid credentials\"}");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during registration\"}");
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during login\"}");
         }
     }
-
 }

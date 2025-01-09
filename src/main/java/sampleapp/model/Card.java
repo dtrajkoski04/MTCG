@@ -1,5 +1,7 @@
 package sampleapp.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Card {
     @JsonProperty("Id")
     private String id;

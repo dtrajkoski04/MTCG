@@ -1,6 +1,7 @@
 
 import httpserver.server.Server;
 import httpserver.utils.Router;
+import sampleapp.controller.SessionController;
 import sampleapp.controller.UserController;
 import sampleapp.persistence.DatabaseInitializer;
 
@@ -25,7 +26,7 @@ public class Main {
     {
         Router router = new Router();
         router.addService("/users", new UserController());
-        router.addService("/sessions", new UserController());
+        router.addService("/sessions", new SessionController());
 
         return router;
     }

@@ -6,24 +6,25 @@ import httpserver.http.Method;
 import httpserver.server.Request;
 import httpserver.server.Response;
 import httpserver.server.RestController;
-import sampleapp.service.UserService;
+import httpserver.utils.RequestHandler;
+import sampleapp.service.SessionService;
 
-public class UserController implements RestController {
-    private final UserService userService;
+public class SessionController implements RestController {
+    private final SessionService sessionService;
 
-    public UserController() {
-        this.userService = new UserService();
+    public SessionController() {
+        this.sessionService = new SessionService();
     }
 
     @Override
     public Response handleRequest(Request request) {
         if (request.getMethod() == Method.POST &&
                 request.getPathParts().size() > 1 &&
-                request.getPathParts().get(1).equals("users")) {
-            return this.userService.register(request);
+                request.getPathParts().get(1).equals("sessions")) {
+            return this.sessionService.login(request);
         } else if (request.getMethod() == Method.POST &&
-                request.getPathname().equals("/users")) { // Handle query params for register
-            return this.userService.register(request);
+                request.getPathname().equals("/sessions")) { // Handle query params for login
+            return this.sessionService.login(request);
         }
 
         return new Response(
