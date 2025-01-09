@@ -1,22 +1,16 @@
 package sampleapp.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public class Card {
-    @JsonProperty("Id")
+public abstract class Card {
     private String id;
+    private String name;
+    private final double damage;
+    private final ElementType elementType;
 
-    @JsonProperty("Name")
-    private CardInfo info;
-
-    @JsonProperty("Damage")
-    private int damage;
-
-    private String owner;
-
-    private boolean usedInDeck = false;
-
-    public Card() {}
+    public Card(String name, double damage, ElementType elementType) {
+        this.name = name;
+        this.damage = damage;
+        this.elementType = elementType;
+    }
 
     public String getId() {
         return id;
@@ -27,32 +21,20 @@ public class Card {
     }
 
     public String getName() {
-        return info.getDisplayName();
+        return name;
     }
 
-    public int getDamage() {
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getDamage() {
         return damage;
     }
 
-    public void setDamage(int damage) {
-        this.damage = damage;
+    public ElementType getElementType() {
+        return elementType;
     }
 
-    public CardInfo getInfo() {
-        return info;
-    }
-
-    public void setInfo(CardInfo info) {
-        this.info = info;
-    }
-
-    public String getElementType() {
-        return info.getElement();
-    }
-
-    public String getCardType() {
-        return info.getType();
-    }
-
-
+    public abstract String getCardType();
 }
