@@ -13,7 +13,7 @@ This project is a REST-based Java server designed to support a card game where p
 Getting Started
 
 1. Clone the repository:
-   `git clone https://github.com/yourusername/mtcg.git`
+   `git clone https://github.com/dtrajkoski04/mtcg.git`
 2. Configure the Docker Container:
    `docker pull postgres:latest`
    `docker run --name MTCG -e POSTGRES_USER=MTCG -e POSTGRES_PASSWORD=MTCG -e POSTGRES_DB=MTCG -p 5432:5432 -d postgres:latest`
@@ -37,3 +37,9 @@ Getting Started
 7. Run the `ìntegration_tests.sh` script from the root of the Project:
    `cd src/test/testscripts`
    `./integration_tests.sh`
+
+
+Notizen:
+- Dependency Injection
+- Card Abstract
+- 
