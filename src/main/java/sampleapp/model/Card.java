@@ -1,27 +1,31 @@
 package sampleapp.model;
 
-/**
- * Abstract base class for all cards.
- */
-public abstract class Card {
-    private String name;
+public class Card {
+    @JsonProperty("Id")
+    private String id;
+
+    @JsonProperty("Name")
+    private CardInfo info;
+
+    @JsonProperty("Damage")
     private int damage;
-    private String elementType;
 
-    // Constructor
-    public Card(String name, int damage, String elementType) {
-        this.name = name;
-        this.damage = damage;
-        this.elementType = elementType;
+    private String owner;
+
+    private boolean usedInDeck = false;
+
+    public Card() {}
+
+    public String getId() {
+        return id;
     }
 
-    // Getters and setters
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        return info.getDisplayName();
     }
 
     public int getDamage() {
@@ -32,25 +36,21 @@ public abstract class Card {
         this.damage = damage;
     }
 
+    public CardInfo getInfo() {
+        return info;
+    }
+
+    public void setInfo(CardInfo info) {
+        this.info = info;
+    }
+
     public String getElementType() {
-        return elementType;
+        return info.getElement();
     }
 
-    public void setElementType(String elementType) {
-        this.elementType = elementType;
+    public String getCardType() {
+        return info.getType();
     }
 
-    // Abstract method to describe the card type
-    public abstract String getCardType();
 
-    @Override
-    public String toString() {
-        return "Card{" +
-                "name='" + name + '\'' +
-                ", damage=" + damage +
-                ", elementType='" + elementType + '\'' +
-                ", cardType='" + getCardType() + '\'' +
-                '}';
-    }
 }
-

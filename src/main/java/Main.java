@@ -19,7 +19,6 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("Application started successfully!");
     }
 
     private static Router configureRouter()
