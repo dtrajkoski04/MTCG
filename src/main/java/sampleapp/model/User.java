@@ -1,31 +1,39 @@
 package sampleapp.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class User {
+    @JsonProperty("Username")
     private String username;
-    private String password;
-    private String token;
-    private List<Card> stack;
-    private List<Card> deck;
 
-    // Constructor for creating a user with no token (e.g., during registration)
+    @JsonProperty("Password")
+    private String password;
+
+    private String token;
+
+    @JsonProperty("Name")
+    private String name;
+
+    @JsonProperty("Bio")
+    private String bio;
+
+    @JsonProperty("Image")
+    private String image;
+
+    // Konstruktor für Registrierung
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.stack = new ArrayList<>();
-        this.deck = new ArrayList<>();
     }
 
-    // Constructor for creating a user with an existing token (e.g., fetched from the database)
+    // Konstruktor für Benutzer mit Token
     public User(String username, String password, String token) {
         this.username = username;
         this.password = password;
         this.token = token;
     }
 
-    // Getters and setters for all fields
+    // Getter und Setter
     public String getUsername() {
         return username;
     }
@@ -50,43 +58,35 @@ public class User {
         this.token = token;
     }
 
-    public List<Card> getStack() {
-        return stack;
+    public String getName() {
+        return name;
     }
 
-    public void setStack(List<Card> stack) {
-        this.stack = stack;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<Card> getDeck() {
-        return deck;
+    public String getBio() {
+        return bio;
     }
 
-    public void setDeck(List<Card> deck) {
-        this.deck = deck;
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 
-    // Utility methods for cards
-    public void addCardToStack(Card card) { stack.add(card); }
-
-    public boolean addCardToDeck(Card card) {
-        if (deck.size() < 4 && stack.contains(card)) {
-            deck.add(card);
-            return true;
-        }
-        return false;
+    public String getImage() {
+        return image;
     }
 
-    public void removeCardFromDeck(Card card) { deck.remove(card); }
+    public void setImage(String image) {
+        this.image = image;
+    }
 
     @Override
     public String toString() {
-        return "User{" +
-                "username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", token='" + token + '\'' +
-                ", stack=" + stack +
-                ", deck=" + deck +
-                '}';
+        return String.format(
+                "User{username='%s', token='%s', coins=%d, elo=%d, name='%s', bio='%s', image='%s'}",
+                username, token, name, bio, image
+        );
     }
 }

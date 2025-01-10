@@ -8,8 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserRepositoryImpl implements UserRepository {
-
-    private UnitOfWork unitOfWork;
+    private final UnitOfWork unitOfWork;
 
     public UserRepositoryImpl(UnitOfWork unitOfWork) {
         this.unitOfWork = unitOfWork;
@@ -24,54 +23,49 @@ public class UserRepositoryImpl implements UserRepository {
             pstmt.setString(2, password);
 
             int rowsAffected = pstmt.executeUpdate();
-            unitOfWork.commitTransaction(); // Commit the transaction
+            unitOfWork.commitTransaction();
 
             return rowsAffected > 0 ? "User registered successfully" : null;
         } catch (SQLException e) {
-            unitOfWork.rollbackTransaction(); // Rollback the transaction on failure
+            unitOfWork.rollbackTransaction();
+            if (e.getSQLState().equals("23505")) { // Unique constraint violation
+                return null;
+            }
             throw new DataAccessException("Failed to register user", e);
         }
     }
 
-
-
     @Override
     public String loginUser(String username, String password) throws SQLException {
-        String selectUserSql = "SELECT * FROM users WHERE username = ? AND password = ?";
-        String upsertTokenSql = "INSERT INTO user_tokens (username, token) VALUES (?, ?) " +
+        String sql = "SELECT id FROM users WHERE username = ? AND password = ?";
+        String updateTokenSql = "INSERT INTO user_tokens (username, token) VALUES (?, ?) " +
                 "ON CONFLICT (username) DO UPDATE SET token = EXCLUDED.token";
 
-        try (PreparedStatement selectStmt = unitOfWork.prepareStatement(selectUserSql)) {
-            selectStmt.setString(1, username);
-            selectStmt.setString(2, password);
+        try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
 
-            ResultSet rs = selectStmt.executeQuery();
+            ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                // User authenticated, generate a token
-                String token = username + "-mtcgtoken";
+                String token = generateToken(username);
 
-                try (PreparedStatement tokenStmt = unitOfWork.prepareStatement(upsertTokenSql)) {
+                try (PreparedStatement tokenStmt = unitOfWork.prepareStatement(updateTokenSql)) {
                     tokenStmt.setString(1, username);
                     tokenStmt.setString(2, token);
-
                     tokenStmt.executeUpdate();
-                    unitOfWork.commitTransaction(); // Commit the transaction after token update
 
+                    unitOfWork.commitTransaction();
                     return token;
                 }
             }
-            return null; // Invalid credentials
+            return null;
         } catch (SQLException e) {
-            unitOfWork.rollbackTransaction(); // Rollback the transaction on failure
+            unitOfWork.rollbackTransaction();
             throw new DataAccessException("Failed to log in user", e);
         }
     }
 
-
-
-
-    // Private method to generate a unique token
-    private String generateToken() {
-        return java.util.UUID.randomUUID().toString();
+    private String generateToken(String username) {
+        return username + "-mtcgtoken";
     }
 }
