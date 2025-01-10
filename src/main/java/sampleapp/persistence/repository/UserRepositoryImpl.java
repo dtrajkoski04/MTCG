@@ -6,6 +6,7 @@ import sampleapp.persistence.DataAccessException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class UserRepositoryImpl implements UserRepository {
     private final UnitOfWork unitOfWork;
@@ -28,7 +29,7 @@ public class UserRepositoryImpl implements UserRepository {
             return rowsAffected > 0 ? "User registered successfully" : null;
         } catch (SQLException e) {
             unitOfWork.rollbackTransaction();
-            if (e.getSQLState().equals("23505")) { // Unique constraint violation
+            if ("23505".equals(e.getSQLState())) { // Unique constraint violation
                 return null;
             }
             throw new DataAccessException("Failed to register user", e);
@@ -38,34 +39,48 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public String loginUser(String username, String password) throws SQLException {
         String sql = "SELECT id FROM users WHERE username = ? AND password = ?";
-        String updateTokenSql = "INSERT INTO user_tokens (username, token) VALUES (?, ?) " +
-                "ON CONFLICT (username) DO UPDATE SET token = EXCLUDED.token";
-
         try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
             pstmt.setString(1, username);
             pstmt.setString(2, password);
 
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                String token = generateToken(username);
-
-                try (PreparedStatement tokenStmt = unitOfWork.prepareStatement(updateTokenSql)) {
-                    tokenStmt.setString(1, username);
-                    tokenStmt.setString(2, token);
-                    tokenStmt.executeUpdate();
-
-                    unitOfWork.commitTransaction();
-                    return token;
-                }
+                return username + "-mtcgtoken";
             }
             return null;
         } catch (SQLException e) {
-            unitOfWork.rollbackTransaction();
             throw new DataAccessException("Failed to log in user", e);
         }
     }
 
-    private String generateToken(String username) {
-        return username + "-mtcgtoken";
+    @Override
+    public Optional<Long> findUserIdByUsername(String username) throws SQLException {
+        String sql = "SELECT id FROM users WHERE username = ?";
+        try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return Optional.of(rs.getLong("id"));
+            }
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public boolean updateUserCoins(long userId, int coins) throws SQLException {
+        String sql = "UPDATE users SET coins = ? WHERE id = ?";
+        try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
+            pstmt.setInt(1, coins);
+            pstmt.setLong(2, userId);
+
+            int rowsAffected = pstmt.executeUpdate();
+            unitOfWork.commitTransaction();
+
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            unitOfWork.rollbackTransaction();
+            throw new DataAccessException("Failed to update user coins", e);
+        }
     }
 }

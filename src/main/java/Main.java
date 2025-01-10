@@ -1,9 +1,12 @@
 
 import httpserver.server.Server;
 import httpserver.utils.Router;
+import sampleapp.controller.CardController;
 import sampleapp.controller.SessionController;
 import sampleapp.controller.UserController;
 import sampleapp.persistence.DatabaseInitializer;
+import sampleapp.persistence.repository.CardRepository;
+import sampleapp.service.CardService;
 
 import java.io.IOException;
 
@@ -27,6 +30,7 @@ public class Main {
         Router router = new Router();
         router.addService("/users", new UserController());
         router.addService("/sessions", new SessionController());
+        router.addService("/cards", new CardController(new CardService()));
 
         return router;
     }
