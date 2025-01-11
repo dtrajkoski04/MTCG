@@ -58,28 +58,10 @@ public class UserService extends AbstractService {
         }
     }
 
-    public Response login(Request request) {
-        try {
-            Map<String, String> requestData = this.getObjectMapper().readValue(request.getBody(), Map.class);
-            String username = requestData.get("username");
-            String password = requestData.get("password");
-
-            if (username == null || password == null) {
-                return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username and password are required\"}");
-            }
-
-            String token = userRepository.loginUser(username, password);
-
-            if (token != null) {
-                return new Response(HttpStatus.OK, ContentType.JSON, "{\"token\": \"" + token + "\"}");
-            } else {
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid credentials\"}");
-            }
-        } catch (JsonProcessingException e) {
-            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Invalid JSON format\"}");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during login\"}");
+    public static boolean checkAuth(String username, String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            return false;
         }
+        return token.equals("Bearer %s-mtcgtoken".formatted(username));
     }
 }

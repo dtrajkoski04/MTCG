@@ -19,7 +19,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     @Override
     public void save(Package packageToBeSaved, List<String> cardIds) {
         String packageSql = "INSERT INTO packages DEFAULT VALUES RETURNING id";
-        String packageCardsSql = "INSERT INTO packages_cards (package_id, card_id) VALUES (?, ?)";
+        String packageCardsSql = "INSERT INTO package_cards (package_id, card_id) VALUES (?, ?)";
 
         try (PreparedStatement stmt = unitOfWork.prepareStatement(packageSql); PreparedStatement stmt2 = unitOfWork.prepareStatement(packageCardsSql)) {
             ResultSet rs = stmt.executeQuery();

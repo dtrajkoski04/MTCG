@@ -8,7 +8,7 @@ import httpserver.server.Response;
 import httpserver.server.RestController;
 import sampleapp.service.UserService;
 
-public class UserController implements RestController {
+public class UserController extends Controller {
     private final UserService userService;
 
     public UserController() {

@@ -82,6 +82,10 @@ public class Request {
         return headerMap;
     }
 
+    public String getHeader(String header) {
+        return headerMap.getHeader(header); // Nur ein Beispiel, abhängig von HeaderMap-Methoden
+    }
+
     public void setHeaderMap(HeaderMap headerMap) {
         this.headerMap = headerMap;
     }

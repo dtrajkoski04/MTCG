@@ -9,7 +9,7 @@ import httpserver.server.RestController;
 import httpserver.utils.RequestHandler;
 import sampleapp.service.SessionService;
 
-public class SessionController implements RestController {
+public class SessionController extends Controller {
     private final SessionService sessionService;
 
     public SessionController() {

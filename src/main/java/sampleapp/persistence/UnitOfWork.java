@@ -24,6 +24,7 @@ public class UnitOfWork implements AutoCloseable {
             try {
                 this.connection.commit();
             } catch (SQLException e) {
+                e.printStackTrace();
                 throw new DataAccessException("Transaction commit failed", e);
             }
         }
@@ -44,6 +45,7 @@ public class UnitOfWork implements AutoCloseable {
             try {
                 return this.connection.prepareStatement(sql);
             } catch (SQLException e) {
+                e.printStackTrace();
                 throw new DataAccessException("Failed to prepare SQL statement", e);
             }
         }
