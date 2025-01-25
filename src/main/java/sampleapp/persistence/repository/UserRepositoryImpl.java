@@ -6,6 +6,7 @@ import sampleapp.persistence.DataAccessException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Optional;
 
 public class UserRepositoryImpl implements UserRepository {
@@ -16,29 +17,32 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public String registerUser(String username, String password) throws SQLException {
+    public void registerUser(String username, String password) throws SQLException {
         String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
 
         try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
             pstmt.setString(1, username);
             pstmt.setString(2, password);
 
-            int rowsAffected = pstmt.executeUpdate();
+            pstmt.executeUpdate();
             unitOfWork.commitTransaction();
 
-            return rowsAffected > 0 ? "User registered successfully" : null;
         } catch (SQLException e) {
             unitOfWork.rollbackTransaction();
-            if ("23505".equals(e.getSQLState())) { // Unique constraint violation
-                return null;
+            // Prüfen, ob der Fehler durch ein Duplikat in der Datenbank verursacht wurde
+            if (e.getSQLState().equals("23505")) { // PostgreSQL-Code für Unique Constraint Violation
+                throw new IllegalArgumentException("User with the given username already exists");
             }
             throw new DataAccessException("Failed to register user", e);
         }
     }
 
+
+
     @Override
     public String loginUser(String username, String password) throws SQLException {
         String sql = "SELECT id FROM users WHERE username = ? AND password = ?";
+
         try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
             pstmt.setString(1, username);
             pstmt.setString(2, password);
@@ -47,40 +51,10 @@ public class UserRepositoryImpl implements UserRepository {
             if (rs.next()) {
                 return username + "-mtcgtoken";
             }
-            return null;
+            return null; // Benutzername oder Passwort falsch
         } catch (SQLException e) {
             throw new DataAccessException("Failed to log in user", e);
         }
     }
 
-    @Override
-    public Optional<Long> findUserIdByUsername(String username) throws SQLException {
-        String sql = "SELECT id FROM users WHERE username = ?";
-        try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
-            pstmt.setString(1, username);
-
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return Optional.of(rs.getLong("id"));
-            }
-            return Optional.empty();
-        }
-    }
-
-    @Override
-    public boolean updateUserCoins(long userId, int coins) throws SQLException {
-        String sql = "UPDATE users SET coins = ? WHERE id = ?";
-        try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
-            pstmt.setInt(1, coins);
-            pstmt.setLong(2, userId);
-
-            int rowsAffected = pstmt.executeUpdate();
-            unitOfWork.commitTransaction();
-
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            unitOfWork.rollbackTransaction();
-            throw new DataAccessException("Failed to update user coins", e);
-        }
-    }
 }

@@ -70,9 +70,19 @@ public class Request {
         }
 
     }
-    public String getParams() {
-        return params;
+    public String getParams(String key) {
+        if (this.params != null) {
+            String[] pairs = this.params.split("&");
+            for (String pair : pairs) {
+                String[] keyValue = pair.split("=");
+                if (keyValue.length == 2 && keyValue[0].equals(key)) {
+                    return keyValue[1];
+                }
+            }
+        }
+        return null; // Parameter nicht gefunden
     }
+
 
     public void setParams(String params) {
         this.params = params;

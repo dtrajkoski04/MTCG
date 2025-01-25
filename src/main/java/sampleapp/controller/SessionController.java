@@ -16,15 +16,12 @@ public class SessionController extends Controller {
         this.sessionService = new SessionService();
     }
 
-    @Override
     public Response handleRequest(Request request) {
-        if (request.getMethod() == Method.POST &&
-                request.getPathParts().size() > 1 &&
-                request.getPathParts().get(1).equals("sessions")) {
-            return this.sessionService.login(request);
-        } else if (request.getMethod() == Method.POST &&
-                request.getPathname().equals("/sessions")) { // Handle query params for login
-            return this.sessionService.login(request);
+        String path = request.getPathname();
+        String method = String.valueOf(request.getMethod());
+
+        if (path.equals("/sessions") && method.equals("POST")) {
+            return this.loginUser(request);
         }
 
         return new Response(
@@ -33,4 +30,27 @@ public class SessionController extends Controller {
                 "{\"message\": \"Invalid endpoint or method\"}"
         );
     }
+
+    public Response loginUser(Request request) {
+        String username = request.getParams("username");
+        String password = request.getParams("password");
+
+        if (username == null || password == null || username.isBlank() || password.isBlank()) {
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username and password are required\"}");
+        }
+
+        try {
+            String token = sessionService.login(username, password);
+            return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Login successful\", \"token\": \"" + token + "\"}");
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Invalid credentials")) {
+                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid credentials\"}");
+            }
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during login\"}");
+        }
+    }
+
 }

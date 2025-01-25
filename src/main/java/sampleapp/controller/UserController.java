@@ -17,13 +17,10 @@ public class UserController extends Controller {
 
     @Override
     public Response handleRequest(Request request) {
-        if (request.getMethod() == Method.POST &&
-                request.getPathParts().size() > 1 &&
-                request.getPathParts().get(1).equals("users")) {
-            return this.userService.register(request);
-        } else if (request.getMethod() == Method.POST &&
-                request.getPathname().equals("/users")) { // Handle query params for register
-            return this.userService.register(request);
+        String path = request.getPathname();
+        String method = String.valueOf(request.getMethod());
+        if (path.equals("/users") && method.equals("POST")) {
+            return this.registerUser(request);
         }
 
         return new Response(
@@ -32,4 +29,27 @@ public class UserController extends Controller {
                 "{\"message\": \"Invalid endpoint or method\"}"
         );
     }
+
+    public Response registerUser(Request request) {
+        String username = request.getParams("username");
+        String password = request.getParams("password");
+
+        if (username == null || password == null || username.isBlank() || password.isBlank()) {
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username and password are required\"}");
+        }
+
+        try {
+            String result = userService.register(username, password);
+            return new Response(HttpStatus.CREATED, ContentType.JSON, "{\"message\": \"" + result + "\"}");
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("already exists")) {
+                return new Response(HttpStatus.CONFLICT, ContentType.JSON, "{\"message\": \"User already exists\"}");
+            }
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during registration\"}");
+        }
+    }
+
 }
