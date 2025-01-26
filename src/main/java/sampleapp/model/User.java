@@ -20,6 +20,12 @@ public class User {
     @JsonProperty("Image")
     private String image;
 
+    private int coins = 20;
+
+    public User(){
+
+    }
+
     // Konstruktor für Registrierung
     public User(String username, String password) {
         this.username = username;
@@ -80,6 +86,14 @@ public class User {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public int getCoins() {
+        return this.coins;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
     }
 
     @Override

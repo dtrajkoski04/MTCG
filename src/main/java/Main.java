@@ -1,6 +1,7 @@
 
 import httpserver.server.Server;
 import httpserver.utils.Router;
+import sampleapp.controller.CardController;
 import sampleapp.controller.PackageController;
 import sampleapp.controller.SessionController;
 import sampleapp.controller.UserController;
@@ -30,6 +31,7 @@ public class Main {
         router.addService("/users", new UserController());
         router.addService("/sessions", new SessionController());
         router.addService("/packages", new PackageController());
+        router.addService("/transactions", new PackageController());
 
         return router;
     }

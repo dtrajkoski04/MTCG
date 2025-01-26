@@ -35,6 +35,8 @@ public class PackageController extends Controller {
 
         if (path.equals("/packages") && method.equals("POST")) {
             return this.createPackage(request);
+        } else if (path.equals("/transactions/packages") && method.equals("POST")) {
+            return this.acquirePackages(request);
         }
 
         return new Response(
@@ -42,6 +44,26 @@ public class PackageController extends Controller {
                 ContentType.JSON,
                 "{\"message\": \"Invalid endpoint or method\"}"
         );
+    }
+
+    private Response acquirePackages(Request request) throws JsonProcessingException {
+        String header = request.getHeader("Authorization");
+        if(header != null && header.startsWith("Bearer ")) {
+            String token = header.substring("Bearer ".length());
+            String username = token.split("-")[0];
+            if(!UserService.checkAuth(username, "Bearer " + token)){
+                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Authorization denied\"}");
+            }
+
+            try {
+                packageService.acquirePackages(username);
+            } catch(Exception e){
+                return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, e.getMessage());
+            }
+            return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Package acquired successfully\"}");
+        } else {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid token\"}");
+        }
     }
 
     private Response createPackage(Request request) throws JsonProcessingException {

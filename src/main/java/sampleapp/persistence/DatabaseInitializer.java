@@ -23,12 +23,12 @@ public class DatabaseInitializer {
             // Users Tabelle
             statement.execute("""
                 CREATE TABLE users (
-                    id SERIAL PRIMARY KEY,
-                    username VARCHAR(50) UNIQUE NOT NULL,
+                    username VARCHAR(50) UNIQUE NOT NULL PRIMARY KEY,
                     password VARCHAR(255) NOT NULL,
                     name VARCHAR(100),
                     bio TEXT,
-                    image TEXT
+                    image TEXT,
+                    coins INT DEFAULT 20
                 );
             """);
 
@@ -47,10 +47,9 @@ public class DatabaseInitializer {
             statement.execute("""
                 CREATE TABLE user_cards (
                     id SERIAL PRIMARY KEY,
-                    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                    user_username VARCHAR(255) REFERENCES users(username) ON DELETE CASCADE,
                     card_id VARCHAR(255) REFERENCES cards(id) ON DELETE CASCADE,
-                    is_in_deck BOOLEAN DEFAULT FALSE,
-                    is_locked BOOLEAN DEFAULT FALSE
+                    is_in_deck BOOLEAN DEFAULT FALSE
                 );
             """);
 

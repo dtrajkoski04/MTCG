@@ -1,10 +1,12 @@
 package sampleapp.persistence.repository;
 
 import sampleapp.model.Card;
+import sampleapp.model.CardInfo;
 import sampleapp.persistence.DataAccessException;
 import sampleapp.persistence.UnitOfWork;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class CardRepositoryImpl implements CardRepository {
@@ -34,4 +36,13 @@ public class CardRepositoryImpl implements CardRepository {
             throw new DataAccessException("Failed to create Card");
         }
     }
+
+    public static Card mapResultSetToCard(ResultSet rs) throws SQLException {
+        Card card = new Card();
+        card.setId(rs.getString("id"));
+        card.setDamage(rs.getInt("damage"));
+        card.setInfo(CardInfo.fromDisplayName(rs.getString("name")));
+        return card;
+    }
+
 }

@@ -1,5 +1,7 @@
 package sampleapp.persistence.repository;
 
+import sampleapp.model.Card;
+import sampleapp.model.User;
 import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.DataAccessException;
 
@@ -41,7 +43,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public String loginUser(String username, String password) throws SQLException {
-        String sql = "SELECT id FROM users WHERE username = ? AND password = ?";
+        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
 
         try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
             pstmt.setString(1, username);
@@ -49,11 +51,79 @@ public class UserRepositoryImpl implements UserRepository {
 
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                return username + "-mtcgtoken";
+                return username + "-mtcgToken";
             }
             return null; // Benutzername oder Passwort falsch
         } catch (SQLException e) {
             throw new DataAccessException("Failed to log in user", e);
+        }
+    }
+
+    @Override
+    public Optional<User> getUserByUsername(String username) throws SQLException {
+        String sql = "SELECT * FROM users WHERE username = ?";
+        try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            unitOfWork.commitTransaction();
+            if (rs.next()) {
+                User user = mapResultSetToUser(rs);
+                return Optional.of(user);
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to get user", e);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public void updateUser(User user) throws SQLException {
+        String sql = "UPDATE users SET coins = ?, name = ?, bio = ?, image = ? WHERE username = ?";
+        try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
+            pstmt.setInt(1, user.getCoins());
+            pstmt.setString(2, user.getName());
+            pstmt.setString(3, user.getBio());
+            pstmt.setString(4, user.getImage());
+            pstmt.setString(5, user.getUsername());
+
+            int rowsAffected = pstmt.executeUpdate();
+            if (rowsAffected > 0) {
+                unitOfWork.commitTransaction();
+                System.out.println("User updated successfully: " + user.getUsername());
+            } else {
+                System.out.println("No user found with username: " + user.getUsername());
+            }
+        } catch (SQLException e) {
+            unitOfWork.rollbackTransaction(); // Sicherstellen, dass die Transaktion zurückgesetzt wird
+            System.err.println("Error updating user: " + e.getMessage());
+            throw e; // Fehler weitergeben
+        }
+    }
+
+
+    @Override
+    public User mapResultSetToUser(ResultSet rs) throws SQLException {
+        User user = new User();
+        user.setUsername(rs.getString("username"));
+        user.setPassword(rs.getString("password"));
+        user.setCoins(rs.getInt("coins"));
+        user.setName(rs.getString("name"));
+        user.setBio(rs.getString("bio"));
+        user.setImage(rs.getString("image"));
+        return user;
+
+    }
+
+    @Override
+    public void addCardToUser(String username, String cardId) throws SQLException {
+        String sql = "INSERT INTO user_cards (user_username, card_id) VALUES (?, ?)";
+        try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, cardId);
+            pstmt.executeUpdate();
+            unitOfWork.commitTransaction();
+        }catch(SQLException e) {
+            unitOfWork.rollbackTransaction();
         }
     }
 

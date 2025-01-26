@@ -42,9 +42,11 @@ public class UserService {
 
 
     public static boolean checkAuth(String username, String token) {
+        System.out.println(username);
+        System.out.println(token);
         if (token == null || !token.startsWith("Bearer ")) {
             return false;
         }
-        return token.equals("Bearer %s-mtcgtoken".formatted(username));
+        return token.equals("Bearer %s-mtcgToken".formatted(username));
     }
 }
