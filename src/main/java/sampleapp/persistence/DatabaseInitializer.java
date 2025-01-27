@@ -14,6 +14,7 @@ public class DatabaseInitializer {
              Statement statement = connection.createStatement()) {
 
             // Tabellen zurücksetzen und neu erstellen
+            statement.execute("DROP TABLE IF EXISTS battles CASCADE");
             statement.execute("DROP TABLE IF EXISTS user_cards CASCADE;");
             statement.execute("DROP TABLE IF EXISTS package_cards CASCADE;");
             statement.execute("DROP TABLE IF EXISTS packages CASCADE;");
@@ -71,6 +72,18 @@ public class DatabaseInitializer {
                     package_id INT REFERENCES packages(id) ON DELETE CASCADE,
                     card_id VARCHAR(255) REFERENCES cards(id) ON DELETE CASCADE,
                     PRIMARY KEY (package_id, card_id)
+                );
+            """);
+
+            // Battle Tabelle
+            statement.execute("""
+                CREATE TABLE battles (
+                    id SERIAL PRIMARY KEY,
+                    player1_id BIGINT NOT NULL,
+                    player2_id BIGINT NOT NULL,
+                    winner_id BIGINT,
+                    log TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             """);
 
