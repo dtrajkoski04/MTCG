@@ -22,6 +22,14 @@ public class User {
 
     private int coins = 20;
 
+    private int elo = 100;
+
+    private int games_played = 0;
+
+    private int wins = 0;
+
+    private int losses = 0;
+
     public User(){
 
     }
@@ -96,11 +104,35 @@ public class User {
         this.coins = coins;
     }
 
-    @Override
-    public String toString() {
-        return String.format(
-                "User{username='%s', token='%s', coins=%d, elo=%d, name='%s', bio='%s', image='%s'}",
-                username, token, name, bio, image
-        );
+    public int getElo() {
+        return elo;
+    }
+
+    public void setElo(int elo) {
+        this.elo = elo;
+    }
+
+    public int getGames_played() {
+        return games_played;
+    }
+
+    public void setGames_played(int games_played) {
+        this.games_played = games_played;
+    }
+
+    public int getWins() {
+        return wins;
+    }
+
+    public void setWins(int wins) {
+        this.wins = wins;
+    }
+
+    public int getLosses() {
+        return losses;
+    }
+
+    public void setLosses(int losses) {
+        this.losses = losses;
     }
 }

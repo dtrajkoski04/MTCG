@@ -28,7 +28,11 @@ public class DatabaseInitializer {
                     name VARCHAR(100),
                     bio TEXT,
                     image TEXT,
-                    coins INT DEFAULT 20
+                    coins INT DEFAULT 20,
+                    elo INT DEFAULT 100,
+                    games_played INT DEFAULT 0,
+                    wins INT DEFAULT 0,
+                    losses INT DEFAULT 0
                 );
             """);
 
