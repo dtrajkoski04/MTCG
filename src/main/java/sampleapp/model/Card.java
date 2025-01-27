@@ -51,5 +51,9 @@ public class Card {
         return info.getType();
     }
 
+    @Override
+    public String toString() {
+        return "Id: " + this.getId() + ", Name: " + info.getDisplayName() + ", Damage: " + this.getDamage() + "\n";
+    }
 
 }

@@ -27,9 +27,14 @@ public class DeckController extends Controller {
     public Response handleRequest(Request request) throws JsonProcessingException {
         String path = request.getPathname();
         String method = String.valueOf(request.getMethod());
+        String format = request.getParams("format"); // Query-Parameter "format" extrahieren
 
         if (path.equals("/deck") && method.equals("GET")) {
-            return this.getDeck(request);
+            if ("plain".equalsIgnoreCase(format)) {
+                return this.getDeckPlain(request);
+            } else {
+                return this.getDeck(request);
+            }
         } else if (path.equals("/deck") && method.equals("PUT")) {
             return this.configureDeck(request);
         }
@@ -40,6 +45,7 @@ public class DeckController extends Controller {
                 "{\"message\": \"Invalid endpoint or method\"}"
         );
     }
+
 
     private Response configureDeck(Request request) throws JsonProcessingException {
         String header = request.getHeader("Authorization");
@@ -81,7 +87,7 @@ public class DeckController extends Controller {
 
 
     private Response getDeck(Request request) throws JsonProcessingException {
-        String header =request.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
         if(header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             String username = token.split("-")[0];
@@ -97,6 +103,31 @@ public class DeckController extends Controller {
             }
             String jsonCards = mapper.writeValueAsString(deck);
             return new Response(HttpStatus.OK, ContentType.JSON, jsonCards);
+        }
+        return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized");
+    }
+
+    private Response getDeckPlain(Request request) throws JsonProcessingException {
+        String header = request.getHeader("Authorization");
+        if(header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
+            String username = token.split("-")[0];
+            if(!UserService.checkAuth(username,"Bearer " + token)){
+                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Access Token missing or invalid");
+            }
+
+            List<Card> deck = null;
+            try {
+                deck = deckService.getDeck(username);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            StringBuilder builder = new StringBuilder();
+            for (Card card : deck) {
+                builder.append(card.toString());
+            }
+            System.out.println(builder.toString());
+            return new Response(HttpStatus.OK, ContentType.PLAIN_TEXT, builder.toString());
         }
         return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized");
     }
