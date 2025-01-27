@@ -8,6 +8,9 @@ import httpserver.server.Response;
 import httpserver.server.RestController;
 import httpserver.utils.RequestHandler;
 import sampleapp.service.SessionService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Map;
 
 public class SessionController extends Controller {
     private final SessionService sessionService;
@@ -31,9 +34,21 @@ public class SessionController extends Controller {
         );
     }
 
+
     public Response loginUser(Request request) {
-        String username = request.getParams("username");
-        String password = request.getParams("password");
+        ObjectMapper objectMapper = new ObjectMapper();
+        String username = null;
+        String password = null;
+
+        try {
+            // Parse JSON body
+            Map<String, String> body = objectMapper.readValue(request.getBody(), Map.class);
+            username = body.get("Username");
+            password = body.get("Password");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Invalid JSON format\"}");
+        }
 
         if (username == null || password == null || username.isBlank() || password.isBlank()) {
             return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username and password are required\"}");
@@ -52,5 +67,6 @@ public class SessionController extends Controller {
             return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during login\"}");
         }
     }
+
 
 }
