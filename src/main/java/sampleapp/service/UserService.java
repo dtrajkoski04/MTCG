@@ -4,6 +4,8 @@ import httpserver.http.ContentType;
 import httpserver.http.HttpStatus;
 import httpserver.server.Request;
 import httpserver.server.Response;
+import sampleapp.DTO.UserDTO;
+import sampleapp.model.User;
 import sampleapp.persistence.DataAccessException;
 import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.repository.UserRepository;
@@ -14,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class UserService {
@@ -38,6 +41,14 @@ public class UserService {
             // Allgemeiner Datenbankfehler
             throw new RuntimeException("An error occurred during registration", e);
         }
+    }
+
+    public Optional<UserDTO> getUser(String username) throws SQLException {
+        Optional<User> user = userRepository.getUserByUsername(username);
+        if (user.isPresent()) {
+            return Optional.of(new UserDTO(username, user.get()));
+        }
+        return Optional.empty();
     }
 
 

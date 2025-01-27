@@ -1,12 +1,18 @@
 package sampleapp.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import httpserver.http.ContentType;
 import httpserver.http.HttpStatus;
 import httpserver.http.Method;
 import httpserver.server.Request;
 import httpserver.server.Response;
 import httpserver.server.RestController;
+import sampleapp.DTO.UserDTO;
 import sampleapp.service.UserService;
+
+import java.sql.SQLException;
+import java.util.Optional;
 
 public class UserController extends Controller {
     private final UserService userService;
@@ -21,6 +27,10 @@ public class UserController extends Controller {
         String method = String.valueOf(request.getMethod());
         if (path.equals("/users") && method.equals("POST")) {
             return this.registerUser(request);
+        } else if(path.startsWith("/users") && method.equals("GET")) {
+            return this.getUser(request);
+        } else if(path.startsWith("/users") && method.equals("PUT")) {
+            return this.updateUser(request);
         }
 
         return new Response(
@@ -50,6 +60,48 @@ public class UserController extends Controller {
             e.printStackTrace();
             return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during registration\"}");
         }
+    }
+
+    public Response getUser(Request request) {
+        String[] pathSegments = request.getPathname().split("/");
+
+        if(pathSegments.length != 3) {
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Invalid endpoint or method\"}");
+        }
+
+        String username = pathSegments[2];
+
+        if(username.isBlank()) {
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username is required\"}");
+        }
+
+        String token = request.getHeader("Authorization");
+
+        if(!UserService.checkAuth(username, token)) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid token\"}");
+        }
+
+        Optional<UserDTO> userDTO = null;
+        try {
+            userDTO = userService.getUser(username);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if(userDTO.isPresent()) {
+            String jsonResponse = String.format(
+                    "{ \"Name\": \"%s\", \"Bio\": \"%s\", \"Image\": \"%s\" }",
+                    userDTO.get().getName(),
+                    userDTO.get().getBio(),
+                    userDTO.get().getImage()
+            );
+
+            return new Response(HttpStatus.OK, ContentType.JSON, jsonResponse);
+        }
+        return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"message\": \"User not found\"}");
+    }
+
+    public Response updateUser(Request request) {
+        return null;
     }
 
 }
