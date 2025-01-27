@@ -51,6 +51,23 @@ public class UserService {
         return Optional.empty();
     }
 
+    public boolean updateUser(String username, UserDTO newUser) {
+        try {
+            Optional<User> oldUser = this.userRepository.getUserByUsername(username);
+            if (oldUser.isPresent()) {
+                User user = oldUser.get();
+                user.setName(newUser.getName());
+                user.setBio(newUser.getBio());
+                user.setImage(newUser.getImage());
+                this.userRepository.updateUser(user);
+                return true;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
 
     public static boolean checkAuth(String username, String token) {
         System.out.println(username);

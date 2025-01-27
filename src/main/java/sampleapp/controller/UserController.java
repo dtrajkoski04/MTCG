@@ -101,7 +101,41 @@ public class UserController extends Controller {
     }
 
     public Response updateUser(Request request) {
-        return null;
+        String[] pathSegments = request.getPathname().split("/");
+        if(pathSegments.length != 3) {
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Invalid endpoint or method\"}");
+        }
+
+        String username = pathSegments[2];
+
+        if(username.isEmpty()) {
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Username is required\"}");
+        }
+
+        String token = request.getHeader("Authorization");
+
+        if(!UserService.checkAuth(username, token)) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid token\"}");
+        }
+
+        // Den Body extrahieren und UserDTO erstellen
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserDTO userDTO = objectMapper.readValue(request.getBody(), UserDTO.class);
+
+            boolean updateSuccess = this.userService.updateUser(username, userDTO);
+
+            if(updateSuccess) {
+                return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"User updated successfully\"}");
+            }
+
+            return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"message\": \"User not found\"}");
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Invalid JSON format\"}");
+        }
+
+
     }
 
 }
