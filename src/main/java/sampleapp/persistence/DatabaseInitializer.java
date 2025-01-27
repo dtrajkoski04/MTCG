@@ -79,13 +79,13 @@ public class DatabaseInitializer {
             statement.execute("""
                 CREATE TABLE battles (
                     id SERIAL PRIMARY KEY,
-                    player1_id BIGINT NOT NULL,
-                    player2_id BIGINT NOT NULL,
-                    winner_id BIGINT,
+                    player1_username VARCHAR(50) REFERENCES users(username) ON DELETE CASCADE,
+                    player2_username VARCHAR(50) REFERENCES users(username) ON DELETE CASCADE,
+                    winner_username VARCHAR(50) REFERENCES users(username),
                     log TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
-            """);
+             """);
 
             System.out.println("Database initialized successfully!");
         } catch (Exception e) {

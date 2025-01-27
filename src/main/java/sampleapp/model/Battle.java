@@ -3,84 +3,40 @@ package sampleapp.model;
 import java.time.LocalDateTime;
 
 public class Battle {
-    private int id; // Primärschlüssel
-    private Long player1Id; // ID von Spieler 1
-    private Long player2Id; // ID von Spieler 2
-    private Long winnerId; // ID des Gewinners (kann null sein, wenn unentschieden)
-    private String log; // Kampfprotokoll
-    private LocalDateTime createdAt; // Zeitstempel der Erstellung
+    private int id; // Primärschlüssel für Battles
+    private String player1Username; // Username von Spieler 1
+    private String player2Username; // Username von Spieler 2
+    private String winnerUsername; // Username des Gewinners (kann null sein bei Unentschieden)
+    private String log; // Protokoll des Battles
+    private LocalDateTime createdAt; // Zeitpunkt der Erstellung
 
-    // Standardkonstruktor
     public Battle() {}
 
-    // Konstruktor mit allen Attributen
-    public Battle(int id, Long player1Id, Long player2Id, Long winnerId, String log, LocalDateTime createdAt) {
+    public Battle(int id, String player1Username, String player2Username, String winnerUsername, String log, LocalDateTime createdAt) {
         this.id = id;
-        this.player1Id = player1Id;
-        this.player2Id = player2Id;
-        this.winnerId = winnerId;
+        this.player1Username = player1Username;
+        this.player2Username = player2Username;
+        this.winnerUsername = winnerUsername;
         this.log = log;
         this.createdAt = createdAt;
     }
 
     // Getter und Setter
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getPlayer1Username() { return player1Username; }
+    public void setPlayer1Username(String player1Username) { this.player1Username = player1Username; }
 
-    public Long getPlayer1Id() {
-        return player1Id;
-    }
+    public String getPlayer2Username() { return player2Username; }
+    public void setPlayer2Username(String player2Username) { this.player2Username = player2Username; }
 
-    public void setPlayer1Id(Long player1Id) {
-        this.player1Id = player1Id;
-    }
+    public String getWinnerUsername() { return winnerUsername; }
+    public void setWinnerUsername(String winnerUsername) { this.winnerUsername = winnerUsername; }
 
-    public Long getPlayer2Id() {
-        return player2Id;
-    }
+    public String getLog() { return log; }
+    public void setLog(String log) { this.log = log; }
 
-    public void setPlayer2Id(Long player2Id) {
-        this.player2Id = player2Id;
-    }
-
-    public Long getWinnerId() {
-        return winnerId;
-    }
-
-    public void setWinnerId(Long winnerId) {
-        this.winnerId = winnerId;
-    }
-
-    public String getLog() {
-        return log;
-    }
-
-    public void setLog(String log) {
-        this.log = log;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    @Override
-    public String toString() {
-        return "Battle{" +
-                "id=" + id +
-                ", player1Id=" + player1Id +
-                ", player2Id=" + player2Id +
-                ", winnerId=" + winnerId +
-                ", log='" + log + '\'' +
-                ", createdAt=" + createdAt +
-                '}';
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
