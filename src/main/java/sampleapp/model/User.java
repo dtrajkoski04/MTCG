@@ -26,9 +26,9 @@ public class User {
 
     private int games_played = 0;
 
-    private int wins = 0;
+    private int games_won = 0;
 
-    private int losses = 0;
+    private int games_lost = 0;
 
     public User(){
 
@@ -120,19 +120,19 @@ public class User {
         this.games_played = games_played;
     }
 
-    public int getWins() {
-        return wins;
+    public int getGames_won() {
+        return games_won;
     }
 
-    public void setWins(int wins) {
-        this.wins = wins;
+    public void setGames_won(int games_won) {
+        this.games_won = games_won;
     }
 
-    public int getLosses() {
-        return losses;
+    public int getGames_lost() {
+        return games_lost;
     }
 
-    public void setLosses(int losses) {
-        this.losses = losses;
+    public void setGames_lost(int games_lost) {
+        this.games_lost = games_lost;
     }
 }

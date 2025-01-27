@@ -31,8 +31,8 @@ public class DatabaseInitializer {
                     coins INT DEFAULT 20,
                     elo INT DEFAULT 100,
                     games_played INT DEFAULT 0,
-                    wins INT DEFAULT 0,
-                    losses INT DEFAULT 0
+                    games_won INT DEFAULT 0,
+                    games_lost INT DEFAULT 0
                 );
             """);
 
