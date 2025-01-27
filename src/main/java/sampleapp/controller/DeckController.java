@@ -126,7 +126,6 @@ public class DeckController extends Controller {
             for (Card card : deck) {
                 builder.append(card.toString());
             }
-            System.out.println(builder.toString());
             return new Response(HttpStatus.OK, ContentType.PLAIN_TEXT, builder.toString());
         }
         return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized");
