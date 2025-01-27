@@ -8,6 +8,8 @@ import sampleapp.persistence.UnitOfWork;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CardRepositoryImpl implements CardRepository {
     private UnitOfWork unitOfWork;
@@ -35,6 +37,27 @@ public class CardRepositoryImpl implements CardRepository {
             e.printStackTrace();
             throw new DataAccessException("Failed to create Card");
         }
+    }
+
+    public List<Card> findAllByUsername(String username) {
+        String sql = "SELECT c.id, c.name, c.damage, c.element_type, c.card_type " +
+                "FROM user_cards uc " +
+                "JOIN cards c ON uc.card_id = c.id " +
+                "WHERE uc.user_username = ?";
+        List<Card> cards = new ArrayList<>();
+
+        try(PreparedStatement pstmt = unitOfWork.prepareStatement(sql)){
+            pstmt.setString(1, username);
+
+            try(ResultSet rs = pstmt.executeQuery()){
+                while(rs.next()) {
+                    cards.add(mapResultSetToCard(rs));
+                }
+            }
+        }catch(SQLException e){
+            throw new RuntimeException("Error fetching cards for user", e);
+        }
+        return cards;
     }
 
     public static Card mapResultSetToCard(ResultSet rs) throws SQLException {

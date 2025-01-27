@@ -32,6 +32,7 @@ public class Main {
         router.addService("/sessions", new SessionController());
         router.addService("/packages", new PackageController());
         router.addService("/transactions", new PackageController());
+        router.addService("/cards", new CardController());
 
         return router;
     }
