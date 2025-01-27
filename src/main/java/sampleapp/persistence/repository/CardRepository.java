@@ -7,4 +7,5 @@ import java.util.List;
 public interface CardRepository {
     void save(Card card);
     List<Card> findAllByUsername(String username);
+    boolean isCardOwned(String username, String cardId);
 }

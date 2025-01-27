@@ -1,10 +1,7 @@
 
 import httpserver.server.Server;
 import httpserver.utils.Router;
-import sampleapp.controller.CardController;
-import sampleapp.controller.PackageController;
-import sampleapp.controller.SessionController;
-import sampleapp.controller.UserController;
+import sampleapp.controller.*;
 import sampleapp.persistence.DatabaseInitializer;
 import sampleapp.persistence.repository.CardRepository;
 
@@ -33,6 +30,7 @@ public class Main {
         router.addService("/packages", new PackageController());
         router.addService("/transactions", new PackageController());
         router.addService("/cards", new CardController());
+        router.addService("/deck", new DeckController());
 
         return router;
     }

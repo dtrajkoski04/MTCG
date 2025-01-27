@@ -68,4 +68,21 @@ public class CardRepositoryImpl implements CardRepository {
         return card;
     }
 
+    public boolean isCardOwned(String username, String cardId) {
+        String sql = "SELECT COUNT(*) AS count FROM user_cards WHERE user_username = ? AND card_id = ?";
+
+        try(PreparedStatement stmt = unitOfWork.prepareStatement(sql)){
+            stmt.setString(1, username);
+            stmt.setString(2, cardId);
+            try(ResultSet rs = stmt.executeQuery()){
+                if(rs.next()) {
+                    return rs.getInt("count") > 0;
+                }
+            }
+        } catch(SQLException e) {
+            throw new RuntimeException("Error fetching card for user", e);
+        }
+        return false;
+    }
+
 }
