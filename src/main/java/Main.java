@@ -33,6 +33,7 @@ public class Main {
         router.addService("/deck", new DeckController());
         router.addService("/stats", new UserStatsController());
         router.addService("/scoreboard", new ScoreboardController());
+        router.addService("/battles", new BattleController());
 
         return router;
     }

@@ -78,13 +78,17 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void updateUser(User user) throws SQLException {
-        String sql = "UPDATE users SET coins = ?, name = ?, bio = ?, image = ? WHERE username = ?";
+        String sql = "UPDATE users SET coins = ?, name = ?, bio = ?, image = ?, elo = ?, games_played = ?, games_won = ?, games_lost = ? WHERE username = ?";
         try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
             pstmt.setInt(1, user.getCoins());
             pstmt.setString(2, user.getName());
             pstmt.setString(3, user.getBio());
             pstmt.setString(4, user.getImage());
-            pstmt.setString(5, user.getUsername());
+            pstmt.setInt(5, user.getElo());
+            pstmt.setInt(6, user.getGames_played());
+            pstmt.setInt(7, user.getGames_won());
+            pstmt.setInt(8, user.getGames_lost());
+            pstmt.setString(9, user.getUsername());
 
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
