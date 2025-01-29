@@ -19,25 +19,26 @@ public class CardRepositoryImpl implements CardRepository {
     }
 
     @Override
-    public void save(Card card) {
+    public void save(Card card) throws SQLException {
         String cardSql = "INSERT INTO cards (id, name, damage, element_type, card_type) VALUES (?, ?, ?, ?, ?)";
 
-        try(PreparedStatement stmt = unitOfWork.prepareStatement(cardSql)) {
+        try (PreparedStatement stmt = unitOfWork.prepareStatement(cardSql)) {
             stmt.setString(1, card.getId());
             stmt.setString(2, card.getName());
             stmt.setInt(3, card.getDamage());
             stmt.setString(4, card.getElementType());
             stmt.setString(5, card.getCardType());
-            System.out.println("Saving card: " + card.getId() + " " + card.getName() + " " + card.getDamage() + " " + card.getElementType() + " " + card.getCardType());
+
+            System.out.println("Saving card: " + card.getId() + " " + card.getName() + " " + card.getDamage());
 
             stmt.executeUpdate();
             unitOfWork.commitTransaction();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             unitOfWork.rollbackTransaction();
-            e.printStackTrace();
-            throw new DataAccessException("Failed to create Card");
+            throw new SQLException("Failed to create Card", e);
         }
     }
+
 
     public List<Card> findAllByUsername(String username) {
         String sql = "SELECT c.id, c.name, c.damage, c.element_type, c.card_type " +

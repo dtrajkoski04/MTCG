@@ -21,30 +21,33 @@ public class PackageRepositoryImpl implements PackageRepository {
     }
 
     @Override
-    public void save(Package packageToBeSaved, List<String> cardIds) {
+    public void save(Package packageToBeSaved, List<String> cardIds) throws SQLException {
         String packageSql = "INSERT INTO packages DEFAULT VALUES RETURNING id";
         String packageCardsSql = "INSERT INTO package_cards (package_id, card_id) VALUES (?, ?)";
 
-        try (PreparedStatement stmt = unitOfWork.prepareStatement(packageSql); PreparedStatement stmt2 = unitOfWork.prepareStatement(packageCardsSql)) {
+        try (PreparedStatement stmt = unitOfWork.prepareStatement(packageSql);
+             PreparedStatement stmt2 = unitOfWork.prepareStatement(packageCardsSql)) {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 packageToBeSaved.setId(rs.getInt(1));
             }
-            for(String cardId : cardIds) {
+
+            for (String cardId : cardIds) {
                 stmt2.setInt(1, packageToBeSaved.getId());
                 stmt2.setString(2, cardId);
                 stmt2.addBatch();
             }
+
             stmt2.executeBatch();
             unitOfWork.commitTransaction();
         } catch (SQLException e) {
             unitOfWork.rollbackTransaction();
-            throw new DataAccessException("Failed to create Package", e);
+            throw new SQLException("Failed to create package", e);
         }
-
     }
 
-   @Override
+
+    @Override
     public List<Package> findAll() {
         String packageSql = "SELECT * FROM packages";
         List<Package> packages = new ArrayList<>();

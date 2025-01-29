@@ -21,12 +21,13 @@ public class PackageService {
         this.userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
-    public void save(Package pkg, List<String> cardIds) {
-        if(cardIds == null || cardIds.size() != 5) {
+    public void save(Package pkg, List<String> cardIds) throws SQLException {
+        if (cardIds == null || cardIds.size() != 5) {
             throw new IllegalArgumentException("cardIds must contain exactly 5 elements");
         }
         packageRepository.save(pkg, cardIds);
     }
+
 
     public void acquirePackages(String username) throws SQLException {
         var user = userRepository.getUserByUsername(username)

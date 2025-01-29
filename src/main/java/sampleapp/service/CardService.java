@@ -25,7 +25,8 @@ public class CardService {
         return cardRepository.findAllByUsername(user.getUsername());
     }
 
-    public void addCard(Card card) {
+    public void addCard(Card card) throws SQLException {
         cardRepository.save(card);
     }
+
 }
