@@ -7,6 +7,8 @@ import httpserver.http.HttpStatus;
 import httpserver.server.Request;
 import httpserver.server.Response;
 import httpserver.server.RestController;
+import sampleapp.exception.InsufficientFundsException;
+import sampleapp.exception.ResourceNotFoundException;
 import sampleapp.model.Card;
 import sampleapp.model.CardInfo;
 import sampleapp.model.Package;
@@ -47,25 +49,34 @@ public class PackageController extends Controller {
         );
     }
 
-    private Response acquirePackages(Request request) throws JsonProcessingException {
+    private Response acquirePackages(Request request) {
         String header = request.getHeader("Authorization");
-        if(header != null && header.startsWith("Bearer ")) {
-            String token = header.substring("Bearer ".length());
-            String username = token.split("-")[0];
-            if(!UserService.checkAuth(username, "Bearer " + token)){
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Authorization denied\"}");
-            }
 
-            try {
-                packageService.acquirePackages(username);
-            } catch(Exception e){
-                return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, e.getMessage());
-            }
-            return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Package acquired successfully\"}");
-        } else {
+        if (header == null || !header.startsWith("Bearer ")) {
             return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid token\"}");
         }
+
+        String token = header.substring("Bearer ".length());
+        String username = token.split("-")[0];
+
+        if (!UserService.checkAuth(username, "Bearer " + token)) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Authorization denied\"}");
+        }
+
+        try {
+            packageService.acquirePackages(username);
+            return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Package acquired successfully\"}");
+        } catch (ResourceNotFoundException e) {
+            return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
+        } catch (InsufficientFundsException e) {
+            return new Response(HttpStatus.FORBIDDEN, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
+        } catch (SQLException e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"Database error while acquiring package\"}");
+        } catch (Exception e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An unexpected error occurred\"}");
+        }
     }
+
 
     private Response createPackage(Request request) {
         String token = request.getHeader("Authorization");

@@ -48,56 +48,58 @@ public class PackageRepositoryImpl implements PackageRepository {
 
 
     @Override
-    public List<Package> findAll() {
+    public List<Package> findAll() throws SQLException {
         String packageSql = "SELECT * FROM packages";
         List<Package> packages = new ArrayList<>();
 
-        try(PreparedStatement stmt = unitOfWork.prepareStatement(packageSql)){
+        try (PreparedStatement stmt = unitOfWork.prepareStatement(packageSql)) {
             ResultSet rs = stmt.executeQuery();
             unitOfWork.commitTransaction();
-            while(rs.next()) {
+            while (rs.next()) {
                 packages.add(new Package(rs.getInt("id")));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLException("Failed to retrieve packages", e);
         }
 
         return packages;
     }
 
     @Override
-    public List<Card> findCardsByPackageId(int packageId) {
+    public List<Card> findCardsByPackageId(int packageId) throws SQLException {
         String cardsSql = "SELECT c.id, c.name, c.damage, c.element_type, c.card_type " +
                 "FROM package_cards pc " +
                 "JOIN cards c ON pc.card_id = c.id " +
                 "WHERE pc.package_id = ?";
         List<Card> cards = new ArrayList<>();
 
-        try(PreparedStatement stmt = unitOfWork.prepareStatement(cardsSql)){
+        try (PreparedStatement stmt = unitOfWork.prepareStatement(cardsSql)) {
             stmt.setInt(1, packageId);
             unitOfWork.commitTransaction();
-            try(ResultSet rs = stmt.executeQuery()){
-                while(rs.next()) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
                     cards.add(mapResultSetToCard(rs));
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLException("Failed to retrieve cards for package", e);
         }
 
         return cards;
     }
 
+
     @Override
-    public void delete(int packageId) {
+    public void delete(int packageId) throws SQLException {
         String deleteSql = "DELETE FROM packages WHERE id = ?";
 
-        try(PreparedStatement stmt = unitOfWork.prepareStatement(deleteSql)){
+        try (PreparedStatement stmt = unitOfWork.prepareStatement(deleteSql)) {
             stmt.setInt(1, packageId);
             stmt.executeUpdate();
             unitOfWork.commitTransaction();
-        }catch(SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            throw new SQLException("Failed to delete package", e);
         }
     }
+
 }

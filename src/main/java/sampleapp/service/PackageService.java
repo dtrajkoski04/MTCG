@@ -1,6 +1,8 @@
 package sampleapp.service;
 
 import httpserver.server.Response;
+import sampleapp.exception.InsufficientFundsException;
+import sampleapp.exception.ResourceNotFoundException;
 import sampleapp.model.Card;
 import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.repository.PackageRepository;
@@ -29,28 +31,28 @@ public class PackageService {
     }
 
 
-    public void acquirePackages(String username) throws SQLException {
+    public void acquirePackages(String username) throws SQLException, InsufficientFundsException, ResourceNotFoundException {
         var user = userRepository.getUserByUsername(username)
-                .orElseThrow(() -> new SQLException("User not found"));
-        if(user.getCoins() < 5){
-            throw new SQLException("You need at least 5 coins");
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.getCoins() < 5) {
+            throw new InsufficientFundsException("You need at least 5 coins to buy a package");
         }
 
         Package pkg = packageRepository.findAll().stream()
                 .findFirst()
-                .orElseThrow(() -> new SQLException("Package not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("No package available for purchase"));
+
         user.setCoins(user.getCoins() - 5);
         userRepository.updateUser(user);
 
         List<Card> cards = packageRepository.findCardsByPackageId(pkg.getId());
 
-        cards.forEach(card -> {
-            try {
-                userRepository.addCardToUser(user.getUsername(), card.getId());
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        for (Card card : cards) {
+            userRepository.addCardToUser(user.getUsername(), card.getId());
+        }
+
         packageRepository.delete(pkg.getId());
     }
+
 }

@@ -8,7 +8,7 @@ import sampleapp.model.Package;
 
 public interface PackageRepository {
     void save(Package packageToBeSaved, List<String> cardIds) throws SQLException;
-    List<Package> findAll();
-    List<Card> findCardsByPackageId(int packageId);
-    void delete(int packageId);
+    List<Package> findAll() throws SQLException;
+    List<Card> findCardsByPackageId(int packageId) throws SQLException;
+    void delete(int packageId) throws SQLException;
 }
