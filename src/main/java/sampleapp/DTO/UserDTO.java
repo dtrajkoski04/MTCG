@@ -25,6 +25,13 @@ public class UserDTO {
         this.image = user.getImage();
     }
 
+    public UserDTO(String username, String name, String bio, String image) {
+        this.username = username;
+        this.name = name;
+        this.bio = bio;
+        this.image = image;
+    }
+
     public String getUsername() {
         return username;
     }

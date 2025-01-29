@@ -19,6 +19,11 @@ public class UserStatsService {
         this.statsRepository = new StatsRepositoryImpl(new UnitOfWork());
     }
 
+    public UserStatsService(UserRepository userRepository, StatsRepository statsRepository) {
+        this.userRepository = userRepository;
+        this.statsRepository = statsRepository;
+    }
+
     public UserStatsDTO getUserStats(String username) throws SQLException, ResourceNotFoundException {
         var user = userRepository.getUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

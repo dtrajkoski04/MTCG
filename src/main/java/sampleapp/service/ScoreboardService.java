@@ -15,6 +15,10 @@ public class ScoreboardService {
         this.scoreboardRepository = new ScoreboardRepositoryImpl(new UnitOfWork());
     }
 
+    public ScoreboardService(ScoreboardRepository scoreboardRepository) {
+        this.scoreboardRepository = scoreboardRepository;
+    }
+
     public List<UserStatsDTO> getScoreboard() throws SQLException {
         return scoreboardRepository.getUserStats();
     }

@@ -20,6 +20,12 @@ public class DeckService {
         this.cardRepository = new CardRepositoryImpl(new UnitOfWork());
     }
 
+    public DeckService(DeckRepository deckRepository, UserRepository userRepository, CardRepository cardRepository) {
+        this.deckRepository = deckRepository;
+        this.userRepository = userRepository;
+        this.cardRepository = cardRepository;
+    }
+
     public List<Card> getDeck(String username) throws SQLException, ResourceNotFoundException {
         var user = userRepository.getUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

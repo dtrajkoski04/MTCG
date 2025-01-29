@@ -20,6 +20,11 @@ public class CardService {
         this.userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
+    public CardService(CardRepository cardRepository, UserRepository userRepository) {
+        this.cardRepository = cardRepository;
+        this.userRepository = userRepository;
+    }
+
     public List<Card> getAllCardsByUsername(String username) throws SQLException, ResourceNotFoundException {
         var user = userRepository.getUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

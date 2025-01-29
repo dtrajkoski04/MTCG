@@ -27,6 +27,10 @@ public class UserService {
         this.userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public String register(String username, String password) throws DataConflictException, SQLException {
         userRepository.registerUser(username, password);
         return "User registered successfully";

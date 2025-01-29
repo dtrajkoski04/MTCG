@@ -33,6 +33,18 @@ public class BattleService {
         this.running = false;
     }
 
+    public BattleService(DeckRepository deckRepository, BattleRepository battleRepository, UserRepository userRepository) {
+        this.deckRepository = deckRepository;
+        this.battleRepository = battleRepository;
+        this.userRepository = userRepository;
+        this.queue = new ArrayList<>();
+        this.result = null;
+        this.player1 = null;
+        this.player2 = null;
+        this.lock = new Object();
+        this.running = false;
+    }
+
     public String startBattle(String username) throws SQLException {
         userRepository.getUserByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

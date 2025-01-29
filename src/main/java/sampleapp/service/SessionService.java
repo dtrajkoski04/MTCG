@@ -22,6 +22,10 @@ public class SessionService {
         userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
+    public SessionService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public String login(String username, String password) throws AuthenticationException, SQLException {
         return userRepository.loginUser(username, password);
     }

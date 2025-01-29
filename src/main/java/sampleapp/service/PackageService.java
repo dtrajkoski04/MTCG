@@ -23,6 +23,11 @@ public class PackageService {
         this.userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
+    public PackageService(PackageRepository packageRepository, UserRepository userRepository) {
+        this.packageRepository = packageRepository;
+        this.userRepository = userRepository;
+    }
+
     public void save(Package pkg, List<String> cardIds) throws SQLException {
         if (cardIds == null || cardIds.size() != 5) {
             throw new IllegalArgumentException("cardIds must contain exactly 5 elements");
