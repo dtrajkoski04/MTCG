@@ -1,5 +1,6 @@
 package sampleapp.service;
 
+import sampleapp.exception.ResourceNotFoundException;
 import sampleapp.model.Card;
 import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.repository.*;
@@ -32,62 +33,53 @@ public class BattleService {
         this.running = false;
     }
 
-    public String startBattle(String username){
-        try {
-            this.userRepository.getUserByUsername(username);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding the username", e);
-        }
+    public String startBattle(String username) throws SQLException {
+        userRepository.getUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        try {
-            if(queue.contains(username)){
-                throw new RuntimeException("Username already in queue");
+        synchronized (lock) {
+            if (queue.contains(username)) {
+                throw new IllegalArgumentException("User already in queue");
             }
 
             queue.add(username);
             running = true;
 
-            if(queue.size() < 2){
-                synchronized (lock){
-                    while(running){
+            if (queue.size() < 2) {
+                try {
+                    while (running) {
                         lock.wait();
                     }
+                    return result;
+                } catch (InterruptedException e) {
+                    throw new RuntimeException("Battle interrupted", e);
                 }
-                return result;
             }
 
-            if(queue.size() >= 2){
+            if (queue.size() >= 2) {
                 this.player1 = queue.get(0);
                 this.player2 = queue.get(1);
 
                 this.result = executeBattle(this.player1, this.player2);
                 running = false;
-                synchronized (lock){
-                    lock.notifyAll();
-                }
-                queue.remove(this.player1);
-                queue.remove(this.player2);
+                lock.notifyAll();
+
+                queue.remove(player1);
+                queue.remove(player2);
+
                 return result;
             }
-        } catch(InterruptedException e){
-            throw new RuntimeException("Interrupted Exception", e);
         }
+
         return null;
     }
 
-    public String executeBattle(String player1, String player2){
 
-        List<Card> deck1 = null;
-        List<Card> deck2 = null;
+    public String executeBattle(String player1, String player2) throws SQLException {
+        List<Card> deck1 = deckRepository.getDeck(player1);
+        List<Card> deck2 = deckRepository.getDeck(player2);
 
-        try {
-            deck1 = this.deckRepository.getDeck(player1);
-            deck2 = this.deckRepository.getDeck(player2);
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-
-        if(deck1.isEmpty() || deck2.isEmpty()){
+        if (deck1.isEmpty() || deck2.isEmpty()) {
             return "One or more decks are empty";
         }
 
@@ -95,49 +87,54 @@ public class BattleService {
         log.append("Battle Begins!\n");
         int round = 0;
 
-        while(!deck1.isEmpty() && !deck2.isEmpty() && round < 100){
+        while (!deck1.isEmpty() && !deck2.isEmpty() && round < 100) {
             round++;
             Card card1 = deck1.get(new Random().nextInt(deck1.size()));
             Card card2 = deck2.get(new Random().nextInt(deck2.size()));
 
             log.append("Round ").append(round).append(": ")
-                    .append(card1.getName()).append(" ("+player1+") vs ")
-                    .append(card2.getName()).append(" ("+player2+")\n");
+                    .append(card1.getName()).append(" (").append(player1).append(") vs ")
+                    .append(card2.getName()).append(" (").append(player2).append(")\n");
 
             double damage1 = damageCalculator(card1, card2);
             double damage2 = damageCalculator(card2, card1);
-            System.out.println("Size: "+deck1.size());
-            System.out.println("Size: "+deck2.size());
 
-            if(damage1 > damage2){
-                log.append("\t"+player1+" wins the round! ").append(card1.getName()).append(" "+damage1).append(" defeats ").append(card2.getName()).append(" "+damage2).append("\n");
+            if (damage1 > damage2) {
+                log.append("\t").append(player1).append(" wins the round! ")
+                        .append(card1.getName()).append(" ").append(damage1).append(" defeats ")
+                        .append(card2.getName()).append(" ").append(damage2).append("\n");
                 deck2.remove(card2);
                 deck1.add(card2);
-            } else if(damage2 > damage1){
-                log.append("\t"+player2+" wins the round! ").append(card2.getName()).append(" "+damage2).append(" defeats ").append(card1.getName()).append(" "+damage1).append("\n");
+            } else if (damage2 > damage1) {
+                log.append("\t").append(player2).append(" wins the round! ")
+                        .append(card2.getName()).append(" ").append(damage2).append(" defeats ")
+                        .append(card1.getName()).append(" ").append(damage1).append("\n");
                 deck1.remove(card1);
                 deck2.add(card1);
             } else {
-                log.append("\tIts a Draw! No cards are exchanged.\n");
+                log.append("\tIt's a Draw! No cards are exchanged.\n");
             }
         }
+
         log.append("Battle Ends, ");
 
-        if(deck1.isEmpty()){
-            log.append(player2+" Wins!\n");
-            this.battleRepository.updateStats(player1, false);
-            this.battleRepository.updateStats(player2, true);
-            this.battleRepository.updateCoins(player2);
-        } else if(deck2.isEmpty()){
-            log.append(player1+" Wins!\n");
-            this.battleRepository.updateStats(player1, true);
-            this.battleRepository.updateStats(player2, false);
-            this.battleRepository.updateCoins(player1);
+        if (deck1.isEmpty()) {
+            log.append(player2).append(" Wins!\n");
+            battleRepository.updateStats(player1, false);
+            battleRepository.updateStats(player2, true);
+            battleRepository.updateCoins(player2);
+        } else if (deck2.isEmpty()) {
+            log.append(player1).append(" Wins!\n");
+            battleRepository.updateStats(player1, true);
+            battleRepository.updateStats(player2, false);
+            battleRepository.updateCoins(player1);
         } else {
             log.append("It is a draw after 100 rounds!\n");
         }
+
         return log.toString();
     }
+
 
     public double damageCalculator(Card card1, Card card2) {
         double damage = specialDamage(card1, card2);

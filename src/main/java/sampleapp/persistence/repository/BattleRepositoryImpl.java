@@ -13,7 +13,7 @@ public class BattleRepositoryImpl implements BattleRepository {
     }
 
     @Override
-    public void updateStats(String username, boolean isWinner) {
+    public void updateStats(String username, boolean isWinner) throws SQLException {
         int eloChange = isWinner ? 3 : -5;
         int winChange = isWinner ? 1 : 0;
         int lossChange = isWinner ? 0 : 1;
@@ -28,30 +28,32 @@ public class BattleRepositoryImpl implements BattleRepository {
         WHERE username = ?;
     """;
 
-        try(PreparedStatement stmt = this.unitOfWork.prepareStatement(sql)){
-            stmt.setInt(1, eloChange);
-            stmt.setInt(2, winChange);
-            stmt.setInt(3, lossChange);
+        try (PreparedStatement stmt = this.unitOfWork.prepareStatement(sql)) {
+            stmt.setInt(1, winChange);
+            stmt.setInt(2, lossChange);
+            stmt.setInt(3, eloChange);
             stmt.setString(4, username);
             stmt.executeUpdate();
             this.unitOfWork.commitTransaction();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             this.unitOfWork.rollbackTransaction();
-            throw new RuntimeException("Error while updating the stats", e);
+            throw new SQLException("Error while updating battle stats", e);
         }
     }
 
+
     @Override
-    public void updateCoins(String username) {
+    public void updateCoins(String username) throws SQLException {
         String sql = "UPDATE users SET coins = coins + 1 WHERE username = ?";
 
-        try(PreparedStatement stmt = this.unitOfWork.prepareStatement(sql)){
+        try (PreparedStatement stmt = this.unitOfWork.prepareStatement(sql)) {
             stmt.setString(1, username);
             stmt.executeUpdate();
             this.unitOfWork.commitTransaction();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             this.unitOfWork.rollbackTransaction();
-            throw new RuntimeException("Error while updating the coins", e);
+            throw new SQLException("Error while updating the coins", e);
         }
     }
+
 }
