@@ -1,5 +1,7 @@
 package sampleapp.persistence.repository;
 
+import sampleapp.exception.AuthenticationException;
+import sampleapp.exception.DataConflictException;
 import sampleapp.model.Card;
 import sampleapp.model.User;
 import sampleapp.persistence.UnitOfWork;
@@ -25,19 +27,17 @@ public class UserRepositoryImpl implements UserRepository {
         try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
             pstmt.setString(1, username);
             pstmt.setString(2, password);
-
             pstmt.executeUpdate();
             unitOfWork.commitTransaction();
-
         } catch (SQLException e) {
             unitOfWork.rollbackTransaction();
-            // Prüfen, ob der Fehler durch ein Duplikat in der Datenbank verursacht wurde
-            if (e.getSQLState().equals("23505")) { // PostgreSQL-Code für Unique Constraint Violation
-                throw new IllegalArgumentException("User with the given username already exists");
+            if (e.getSQLState().equals("23505")) { // PostgreSQL unique constraint violation
+                throw new DataConflictException("User with the given username already exists");
             }
-            throw new DataAccessException("Failed to register user", e);
+            throw new SQLException("Failed to register user", e);
         }
     }
+
 
 
 
@@ -53,11 +53,12 @@ public class UserRepositoryImpl implements UserRepository {
             if (rs.next()) {
                 return username + "-mtcgToken";
             }
-            return null; // Benutzername oder Passwort falsch
+            throw new AuthenticationException("Invalid credentials"); // Throw exception instead of returning null
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to log in user", e);
+            throw new SQLException("Failed to log in user", e);
         }
     }
+
 
     @Override
     public Optional<User> getUserByUsername(String username) throws SQLException {

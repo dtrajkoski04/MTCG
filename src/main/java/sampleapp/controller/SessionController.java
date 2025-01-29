@@ -7,6 +7,7 @@ import httpserver.server.Request;
 import httpserver.server.Response;
 import httpserver.server.RestController;
 import httpserver.utils.RequestHandler;
+import sampleapp.exception.AuthenticationException;
 import sampleapp.service.SessionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -57,16 +58,14 @@ public class SessionController extends Controller {
         try {
             String token = sessionService.login(username, password);
             return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Login successful\", \"token\": \"" + token + "\"}");
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("Invalid credentials")) {
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid credentials\"}");
-            }
-            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
+        } catch (AuthenticationException e) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Invalid credentials\"}");
         } catch (Exception e) {
             e.printStackTrace();
             return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during login\"}");
         }
     }
+
 
 
 }

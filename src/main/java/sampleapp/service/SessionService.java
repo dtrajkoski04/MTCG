@@ -4,6 +4,7 @@ import httpserver.http.ContentType;
 import httpserver.http.HttpStatus;
 import httpserver.server.Request;
 import httpserver.server.Response;
+import sampleapp.exception.AuthenticationException;
 import sampleapp.persistence.DataAccessException;
 import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.repository.UserRepository;
@@ -21,26 +22,9 @@ public class SessionService {
         userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
-    public String login(String username, String password) {
-        if (username == null || password == null || username.isBlank() || password.isBlank()) {
-            throw new IllegalArgumentException("Username and password are required");
-        }
-
-        try {
-            String token = userRepository.loginUser(username, password);
-            if (token == null) {
-                throw new IllegalArgumentException("Invalid credentials");
-            }
-            return token;
-        } catch (IllegalArgumentException e) {
-            // Weitergeben spezifischer Eingabefehler wie ungültige Anmeldedaten
-            throw e;
-        } catch (DataAccessException e) {
-            // Allgemeiner Datenbankfehler
-            throw new RuntimeException("An error occurred during login", e);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public String login(String username, String password) throws AuthenticationException, SQLException {
+        return userRepository.loginUser(username, password);
     }
+
 
 }

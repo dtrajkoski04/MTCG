@@ -5,6 +5,7 @@ import httpserver.http.HttpStatus;
 import httpserver.server.Request;
 import httpserver.server.Response;
 import sampleapp.DTO.UserDTO;
+import sampleapp.exception.DataConflictException;
 import sampleapp.model.User;
 import sampleapp.persistence.DataAccessException;
 import sampleapp.persistence.UnitOfWork;
@@ -26,21 +27,9 @@ public class UserService {
         this.userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
-    public String register(String username, String password) {
-        if (username == null || password == null || username.isBlank() || password.isBlank()) {
-            throw new IllegalArgumentException("Username and password are required");
-        }
-
-        try {
-            userRepository.registerUser(username, password);
-            return "User registered successfully";
-        } catch (IllegalArgumentException e) {
-            // Weiterwerfen für spezifische Fehler wie "User existiert bereits"
-            throw e;
-        } catch (DataAccessException | SQLException e) {
-            // Allgemeiner Datenbankfehler
-            throw new RuntimeException("An error occurred during registration", e);
-        }
+    public String register(String username, String password) throws DataConflictException, SQLException {
+        userRepository.registerUser(username, password);
+        return "User registered successfully";
     }
 
     public Optional<UserDTO> getUser(String username) throws SQLException {

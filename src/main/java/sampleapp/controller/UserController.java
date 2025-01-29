@@ -9,6 +9,7 @@ import httpserver.server.Request;
 import httpserver.server.Response;
 import httpserver.server.RestController;
 import sampleapp.DTO.UserDTO;
+import sampleapp.exception.DataConflictException;
 import sampleapp.service.UserService;
 
 import java.sql.SQLException;
@@ -63,14 +64,8 @@ public class UserController extends Controller {
         try {
             String result = userService.register(username, password);
             return new Response(HttpStatus.CREATED, ContentType.JSON, "{\"message\": \"" + result + "\"}");
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("already exists")) {
-                return new Response(HttpStatus.CONFLICT, ContentType.JSON, "{\"message\": \"User already exists\"}");
-            }
-            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
         } catch (Exception e) {
-            e.printStackTrace();
-            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An error occurred during registration\"}");
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
         }
     }
 
