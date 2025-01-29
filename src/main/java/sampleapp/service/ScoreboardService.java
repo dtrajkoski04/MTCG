@@ -5,6 +5,7 @@ import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.repository.ScoreboardRepository;
 import sampleapp.persistence.repository.ScoreboardRepositoryImpl;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class ScoreboardService {
@@ -14,7 +15,7 @@ public class ScoreboardService {
         this.scoreboardRepository = new ScoreboardRepositoryImpl(new UnitOfWork());
     }
 
-    public List<UserStatsDTO> getScoreboard() {
+    public List<UserStatsDTO> getScoreboard() throws SQLException {
         return scoreboardRepository.getUserStats();
     }
 

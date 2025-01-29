@@ -10,6 +10,7 @@ import sampleapp.DTO.UserStatsDTO;
 import sampleapp.service.ScoreboardService;
 import sampleapp.service.UserService;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class ScoreboardController extends Controller {
@@ -36,19 +37,28 @@ public class ScoreboardController extends Controller {
         );
     }
 
-    private Response getScoreboard(Request request) throws JsonProcessingException {
+    private Response getScoreboard(Request request) {
         String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            String username = token.split("-")[0];
 
-            if (!UserService.checkAuth(username, "Bearer " + token)) {
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Access Token missing or invalid");
-            }
+        if (header == null || !header.startsWith("Bearer ")) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Access Token missing\"}");
+        }
 
+        String token = header.substring("Bearer ".length());
+        String username = token.split("-")[0];
+
+        if (!UserService.checkAuth(username, "Bearer " + token)) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Access Token missing or invalid\"}");
+        }
+
+        try {
             List<UserStatsDTO> scoreboard = scoreboardService.getScoreboard();
             return new Response(HttpStatus.OK, ContentType.JSON, objectMapper.writeValueAsString(scoreboard));
+        } catch (SQLException e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"Database error while fetching scoreboard\"}");
+        } catch (Exception e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An unexpected error occurred\"}");
         }
-        return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Access Token missing");
     }
+
 }

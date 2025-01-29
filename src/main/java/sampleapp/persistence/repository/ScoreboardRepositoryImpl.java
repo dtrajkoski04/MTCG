@@ -17,13 +17,13 @@ public class ScoreboardRepositoryImpl implements ScoreboardRepository {
     }
 
     @Override
-    public List<UserStatsDTO> getUserStats() {
+    public List<UserStatsDTO> getUserStats() throws SQLException {
         String sql = "SELECT username, elo, games_played, games_won, games_lost " +
                 "FROM users " +
                 "ORDER BY elo DESC";
         List<UserStatsDTO> scoreboard = new ArrayList<>();
 
-        try(PreparedStatement stmt = unitOfWork.prepareStatement(sql)) {
+        try (PreparedStatement stmt = unitOfWork.prepareStatement(sql)) {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     scoreboard.add(new UserStatsDTO(
@@ -35,9 +35,11 @@ public class ScoreboardRepositoryImpl implements ScoreboardRepository {
                     ));
                 }
             }
-        } catch(SQLException e) {
-            throw new RuntimeException("Error fetching scoreboard", e);
+        } catch (SQLException e) {
+            throw new SQLException("Failed to fetch scoreboard", e);
         }
+
         return scoreboard;
     }
+
 }
