@@ -97,6 +97,7 @@ public class BattleService {
                     .append(card2.getName()).append(" (").append(player2).append(")\n");
 
             double damage1 = damageCalculator(card1, card2);
+            // damage1 += 100.0;
             double damage2 = damageCalculator(card2, card1);
 
             if (damage1 > damage2) {
@@ -120,16 +121,18 @@ public class BattleService {
 
         if (deck1.isEmpty()) {
             log.append(player2).append(" Wins!\n");
-            battleRepository.updateStats(player1, false);
-            battleRepository.updateStats(player2, true);
+            battleRepository.updateStats(player1, "loser");
+            battleRepository.updateStats(player2, "winner");
             battleRepository.updateCoins(player2);
         } else if (deck2.isEmpty()) {
             log.append(player1).append(" Wins!\n");
-            battleRepository.updateStats(player1, true);
-            battleRepository.updateStats(player2, false);
+            battleRepository.updateStats(player1, "winner");
+            battleRepository.updateStats(player2, "loser");
             battleRepository.updateCoins(player1);
         } else {
             log.append("It is a draw after 100 rounds!\n");
+            battleRepository.updateStats(player1, "draw");
+            battleRepository.updateStats(player2, "draw");
         }
 
         return log.toString();

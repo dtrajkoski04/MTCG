@@ -13,10 +13,19 @@ public class BattleRepositoryImpl implements BattleRepository {
     }
 
     @Override
-    public void updateStats(String username, boolean isWinner) throws SQLException {
-        int eloChange = isWinner ? 3 : -5;
-        int winChange = isWinner ? 1 : 0;
-        int lossChange = isWinner ? 0 : 1;
+    public void updateStats(String username, String result) throws SQLException {
+
+        int eloChange = 0;
+        int winChange = 0;
+        int lossChange = 0;
+
+        if(result.equals("winner")) {
+            eloChange = 3;
+            winChange = 1;
+        } else if(result.equals("loser")) {
+            eloChange = -5;
+            lossChange = 1;
+        }
 
         String sql = """
         UPDATE users
