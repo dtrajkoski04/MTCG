@@ -1,6 +1,7 @@
 package sampleapp.service;
 
 import sampleapp.DTO.UserStatsDTO;
+import sampleapp.exception.ResourceNotFoundException;
 import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.repository.StatsRepository;
 import sampleapp.persistence.repository.StatsRepositoryImpl;
@@ -18,9 +19,11 @@ public class UserStatsService {
         this.statsRepository = new StatsRepositoryImpl(new UnitOfWork());
     }
 
-    public UserStatsDTO getUserStats(String username) throws SQLException {
-        var user = this.userRepository.getUserByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return statsRepository.getUserStats(username);
+    public UserStatsDTO getUserStats(String username) throws SQLException, ResourceNotFoundException {
+        var user = userRepository.getUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return statsRepository.getUserStats(user.getUsername());
     }
+
 }
