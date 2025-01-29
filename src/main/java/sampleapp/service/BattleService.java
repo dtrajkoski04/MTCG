@@ -76,8 +76,16 @@ public class BattleService {
     }
 
     public String executeBattle(String player1, String player2){
-        List<Card> deck1 = this.deckRepository.getDeck(player1);
-        List<Card> deck2 = this.deckRepository.getDeck(player2);
+
+        List<Card> deck1 = null;
+        List<Card> deck2 = null;
+
+        try {
+            deck1 = this.deckRepository.getDeck(player1);
+            deck2 = this.deckRepository.getDeck(player2);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
 
         if(deck1.isEmpty() || deck2.isEmpty()){
             return "One or more decks are empty";

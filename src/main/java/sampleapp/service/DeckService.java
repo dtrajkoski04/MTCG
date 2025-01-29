@@ -1,6 +1,8 @@
 package sampleapp.service;
 
+import sampleapp.exception.ResourceNotFoundException;
 import sampleapp.model.Card;
+import sampleapp.persistence.DataAccessException;
 import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.repository.*;
 
@@ -18,30 +20,35 @@ public class DeckService {
         this.cardRepository = new CardRepositoryImpl(new UnitOfWork());
     }
 
-    public List<Card> getDeck(String username) throws SQLException {
+    public List<Card> getDeck(String username) throws SQLException, ResourceNotFoundException {
         var user = userRepository.getUserByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return deckRepository.getDeck(username);
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return deckRepository.getDeck(user.getUsername()); // Will return an empty list if no deck cards exist
     }
 
-    public void configureDeck(String username, List<String> ids) throws SQLException {
-        if(ids.size() != 4){
-            throw new IllegalArgumentException("Not enough ids");
+
+
+    public void configureDeck(String username, List<String> ids) throws SQLException, IllegalArgumentException, DataAccessException {
+        if (ids.size() != 4) {
+            throw new IllegalArgumentException("Deck must contain exactly 4 cards");
         }
+
         var user = userRepository.getUserByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<Card> currDeck = this.getDeck(username);
 
-        for(String id : ids){
-            if(!cardRepository.isCardOwned(username, id)){
-                throw new IllegalArgumentException("Card" + id + " is not owned by " + username);
+        for (String id : ids) {
+            if (!cardRepository.isCardOwned(username, id)) {
+                throw new IllegalArgumentException("Card " + id + " is not owned by " + username);
             }
             deckRepository.addToDeck(username, id);
         }
 
-        for(Card card : currDeck){
+        for (Card card : currDeck) {
             deckRepository.removeFromDeck(username, card.getId());
         }
     }
+
 }

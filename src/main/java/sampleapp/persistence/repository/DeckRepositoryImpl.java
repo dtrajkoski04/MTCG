@@ -21,28 +21,29 @@ public class DeckRepositoryImpl implements DeckRepository {
 
 
     @Override
-    public List<Card> getDeck(String username) {
+    public List<Card> getDeck(String username) throws SQLException {
         String sql = "SELECT c.id, c.name, c.damage, c.element_type, c.card_type " +
                 "FROM user_cards uc " +
                 "JOIN cards c ON uc.card_id = c.id " +
                 "WHERE uc.user_username = ? AND uc.is_in_deck = TRUE";
         List<Card> deck = new ArrayList<>();
 
-        try(PreparedStatement stmt = unitOfWork.prepareStatement(sql)){
+        try (PreparedStatement stmt = unitOfWork.prepareStatement(sql)) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
+            while (rs.next()) {
                 deck.add(mapResultSetToCard(rs));
             }
-
-        }catch(SQLException e){
-            throw new RuntimeException("Error while retrieving user deck", e);
+        } catch (SQLException e) {
+            throw new SQLException("Failed to retrieve user deck", e);
         }
+
         return deck;
     }
 
+
     @Override
-    public void addToDeck(String username, String id) {
+    public void addToDeck(String username, String id) throws SQLException, DataAccessException {
         String sql = "UPDATE user_cards SET is_in_deck = TRUE WHERE user_username = ? AND card_id = ?";
 
         try (PreparedStatement stmt = unitOfWork.prepareStatement(sql)) {
@@ -58,13 +59,14 @@ public class DeckRepositoryImpl implements DeckRepository {
             unitOfWork.commitTransaction();
         } catch (SQLException e) {
             unitOfWork.rollbackTransaction();
-            throw new DataAccessException("Failed to add card to deck", e);
+            throw new SQLException("Failed to add card to deck", e);
         }
     }
 
 
+
     @Override
-    public void removeFromDeck(String username, String id) {
+    public void removeFromDeck(String username, String id) throws SQLException, DataAccessException {
         String sql = "UPDATE user_cards SET is_in_deck = FALSE WHERE user_username = ? AND card_id = ?";
 
         try (PreparedStatement stmt = unitOfWork.prepareStatement(sql)) {
@@ -80,8 +82,9 @@ public class DeckRepositoryImpl implements DeckRepository {
             unitOfWork.commitTransaction();
         } catch (SQLException e) {
             unitOfWork.rollbackTransaction();
-            throw new DataAccessException("Failed to remove card from deck", e);
+            throw new SQLException("Failed to remove card from deck", e);
         }
     }
+
 
 }

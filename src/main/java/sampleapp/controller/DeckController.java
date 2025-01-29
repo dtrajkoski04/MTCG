@@ -7,7 +7,9 @@ import httpserver.http.ContentType;
 import httpserver.http.HttpStatus;
 import httpserver.server.Request;
 import httpserver.server.Response;
+import sampleapp.exception.ResourceNotFoundException;
 import sampleapp.model.Card;
+import sampleapp.persistence.DataAccessException;
 import sampleapp.service.DeckService;
 import sampleapp.service.UserService;
 
@@ -49,85 +51,108 @@ public class DeckController extends Controller {
 
     private Response configureDeck(Request request) throws JsonProcessingException {
         String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            String username = token.split("-")[0];
 
-            if (!UserService.checkAuth(username, "Bearer " + token)) {
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Access Token missing or invalid");
-            }
+        if (header == null || !header.startsWith("Bearer ")) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Unauthorized\"}");
+        }
 
-            List<String> cardIds = new ArrayList<>();
-            JsonNode jsonNode = toJsonNode(request.getBody());
+        String token = header.substring("Bearer ".length());
+        String username = token.split("-")[0];
 
-            // Prüfen, ob das JSON ein Array ist
-            if (jsonNode.isArray()) {
-                for (JsonNode card : jsonNode) {
-                    if (card.isTextual()) { // Überprüfen, ob der Knoten ein String ist
-                        cardIds.add(card.asText());
-                    } else {
-                        return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "Invalid card format");
-                    }
-                }
+        if (!UserService.checkAuth(username, "Bearer " + token)) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Access Token missing or invalid\"}");
+        }
+
+        List<String> cardIds = new ArrayList<>();
+        JsonNode jsonNode = toJsonNode(request.getBody());
+
+        // Validate JSON input
+        if (!jsonNode.isArray()) {
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Expected an array of card IDs\"}");
+        }
+
+        for (JsonNode card : jsonNode) {
+            if (card.isTextual()) {
+                cardIds.add(card.asText());
             } else {
-                return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "Expected an array of card IDs");
+                return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"Invalid card format\"}");
             }
+        }
 
-            // Deck konfigurieren
-            try {
-                deckService.configureDeck(username, cardIds);
-            } catch (SQLException e) {
-                return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, e.getMessage());
-            }
-            return new Response(HttpStatus.OK, ContentType.JSON, "Deck configured successfully");
-        } else {
-            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized");
+        try {
+            deckService.configureDeck(username, cardIds);
+            return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Deck configured successfully\"}");
+        } catch (IllegalArgumentException e) {
+            return new Response(HttpStatus.BAD_REQUEST, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
+        } catch (DataAccessException e) {
+            return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
+        } catch (SQLException e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"Database error while configuring deck\"}");
+        } catch (Exception e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An unexpected error occurred\"}");
         }
     }
 
 
-    private Response getDeck(Request request) throws JsonProcessingException {
-        String header = request.getHeader("Authorization");
-        if(header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            String username = token.split("-")[0];
-            if(!UserService.checkAuth(username,"Bearer " + token)){
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Access Token missing or invalid");
-            }
 
-            List<Card> deck = null;
-            try {
-                deck = deckService.getDeck(username);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+    private Response getDeck(Request request) {
+        String header = request.getHeader("Authorization");
+
+        if (header == null || !header.startsWith("Bearer ")) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Unauthorized\"}");
+        }
+
+        String token = header.substring("Bearer ".length());
+        String username = token.split("-")[0];
+
+        if (!UserService.checkAuth(username, "Bearer " + token)) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Access Token missing or invalid\"}");
+        }
+
+        try {
+            List<Card> deck = deckService.getDeck(username);
             String jsonCards = mapper.writeValueAsString(deck);
             return new Response(HttpStatus.OK, ContentType.JSON, jsonCards);
+        } catch (ResourceNotFoundException e) {
+            return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
+        } catch (SQLException e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"Database error while retrieving user deck\"}");
+        } catch (Exception e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An unexpected error occurred\"}");
         }
-        return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized");
     }
 
-    private Response getDeckPlain(Request request) throws JsonProcessingException {
-        String header = request.getHeader("Authorization");
-        if(header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            String username = token.split("-")[0];
-            if(!UserService.checkAuth(username,"Bearer " + token)){
-                return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Access Token missing or invalid");
-            }
 
-            List<Card> deck = null;
-            try {
-                deck = deckService.getDeck(username);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+    private Response getDeckPlain(Request request) {
+        String header = request.getHeader("Authorization");
+
+        if (header == null || !header.startsWith("Bearer ")) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Unauthorized\"}");
+        }
+
+        String token = header.substring("Bearer ".length());
+        String username = token.split("-")[0];
+
+        if (!UserService.checkAuth(username, "Bearer " + token)) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Access Token missing or invalid\"}");
+        }
+
+        try {
+            List<Card> deck = deckService.getDeck(username);
+
             StringBuilder builder = new StringBuilder();
             for (Card card : deck) {
-                builder.append(card.toString());
+                builder.append(card.toString()).append("\n"); // Ensure proper formatting for plain text output
             }
-            return new Response(HttpStatus.OK, ContentType.PLAIN_TEXT, builder.toString());
+
+            return new Response(HttpStatus.OK, ContentType.PLAIN_TEXT, builder.toString().trim()); // Remove trailing newline
+        } catch (ResourceNotFoundException e) {
+            return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"message\": \"User not found\"}");
+        } catch (SQLException e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"Database error while retrieving user deck\"}");
+        } catch (Exception e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An unexpected error occurred\"}");
         }
-        return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "Unauthorized");
     }
+
 }
