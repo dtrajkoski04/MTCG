@@ -1,5 +1,6 @@
 package sampleapp.service;
 
+import sampleapp.exception.ResourceNotFoundException;
 import sampleapp.model.Card;
 import sampleapp.persistence.UnitOfWork;
 import sampleapp.persistence.repository.CardRepository;
@@ -19,11 +20,19 @@ public class CardService {
         this.userRepository = new UserRepositoryImpl(new UnitOfWork());
     }
 
-    public List<Card> getAllCardsByUsername(String username) throws SQLException {
+    public List<Card> getAllCardsByUsername(String username) throws SQLException, ResourceNotFoundException {
         var user = userRepository.getUserByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not Found"));
-        return cardRepository.findAllByUsername(user.getUsername());
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        List<Card> cards = cardRepository.findAllByUsername(user.getUsername());
+
+        if (cards.isEmpty()) {
+            throw new ResourceNotFoundException("No cards found for user");
+        }
+
+        return cards;
     }
+
 
     public void addCard(Card card) throws SQLException {
         cardRepository.save(card);

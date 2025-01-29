@@ -40,26 +40,28 @@ public class CardRepositoryImpl implements CardRepository {
     }
 
 
-    public List<Card> findAllByUsername(String username) {
+    @Override
+    public List<Card> findAllByUsername(String username) throws SQLException {
         String sql = "SELECT c.id, c.name, c.damage, c.element_type, c.card_type " +
                 "FROM user_cards uc " +
                 "JOIN cards c ON uc.card_id = c.id " +
                 "WHERE uc.user_username = ?";
         List<Card> cards = new ArrayList<>();
 
-        try(PreparedStatement pstmt = unitOfWork.prepareStatement(sql)){
+        try (PreparedStatement pstmt = unitOfWork.prepareStatement(sql)) {
             pstmt.setString(1, username);
-
-            try(ResultSet rs = pstmt.executeQuery()){
-                while(rs.next()) {
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
                     cards.add(mapResultSetToCard(rs));
                 }
             }
-        }catch(SQLException e){
-            throw new RuntimeException("Error fetching cards for user", e);
+        } catch (SQLException e) {
+            throw new SQLException("Failed to fetch user cards", e);
         }
+
         return cards;
     }
+
 
     public static Card mapResultSetToCard(ResultSet rs) throws SQLException {
         Card card = new Card();

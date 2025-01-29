@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface CardRepository {
     void save(Card card) throws SQLException;
-    List<Card> findAllByUsername(String username);
+    List<Card> findAllByUsername(String username) throws SQLException;
     boolean isCardOwned(String username, String cardId);
 }

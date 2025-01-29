@@ -7,6 +7,7 @@ import httpserver.http.HttpStatus;
 import httpserver.server.Request;
 import httpserver.server.Response;
 import httpserver.server.RestController;
+import sampleapp.exception.ResourceNotFoundException;
 import sampleapp.model.Card;
 import sampleapp.service.CardService;
 import sampleapp.service.PackageService;
@@ -30,14 +31,8 @@ public class CardController extends Controller {
         String path = request.getPathname();
         String method = String.valueOf(request.getMethod());
 
-        try {
-            if (path.equals("/cards") && method.equals("GET")) {
-                return this.getUserCards(request);
-            }
-        }catch(JsonProcessingException e) {
-            throw new RuntimeException(e);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        if (path.equals("/cards") && method.equals("GET")) {
+            return this.getUserCards(request);
         }
 
         return new Response(
@@ -47,20 +42,31 @@ public class CardController extends Controller {
         );
     }
 
-    public Response getUserCards(Request request) throws JsonProcessingException, SQLException {
+    public Response getUserCards(Request request) {
         String header = request.getHeader("Authorization");
-        if(header != null && header.startsWith("Bearer ")) {
-            String token = header.substring("Bearer ".length());
-            String username = token.split("-")[0];
 
-            if(!UserService.checkAuth(username, "Bearer " + token)) {
-                return new Response(HttpStatus.OK, ContentType.JSON, "{\"message\": \"Access Token missing or Invalid\"}");
-            }
+        if (header == null || !header.startsWith("Bearer ")) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Unauthorized\"}");
+        }
 
+        String token = header.substring("Bearer ".length());
+        String username = token.split("-")[0];
+
+        if (!UserService.checkAuth(username, "Bearer " + token)) {
+            return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Access Token missing or invalid\"}");
+        }
+
+        try {
             List<Card> cards = cardService.getAllCardsByUsername(username);
             String jsonCards = objectMapper.writeValueAsString(cards);
             return new Response(HttpStatus.OK, ContentType.JSON, jsonCards);
+        } catch (ResourceNotFoundException e) {
+            return new Response(HttpStatus.NOT_FOUND, ContentType.JSON, "{\"message\": \"" + e.getMessage() + "\"}");
+        } catch (SQLException e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"Database error while fetching user cards\"}");
+        } catch (Exception e) {
+            return new Response(HttpStatus.INTERNAL_SERVER_ERROR, ContentType.JSON, "{\"message\": \"An unexpected error occurred\"}");
         }
-        return new Response(HttpStatus.UNAUTHORIZED, ContentType.JSON, "{\"message\": \"Unauthorized\"}");
     }
+
 }
