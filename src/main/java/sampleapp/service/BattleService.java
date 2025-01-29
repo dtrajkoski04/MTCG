@@ -62,6 +62,11 @@ public class BattleService {
 
                 this.result = executeBattle(this.player1, this.player2);
                 running = false;
+                synchronized (lock){
+                    lock.notifyAll();
+                }
+                queue.remove(this.player1);
+                queue.remove(this.player2);
                 return result;
             }
         } catch(InterruptedException e){
@@ -93,6 +98,8 @@ public class BattleService {
 
             double damage1 = damageCalculator(card1, card2);
             double damage2 = damageCalculator(card2, card1);
+            System.out.println("Size: "+deck1.size());
+            System.out.println("Size: "+deck2.size());
 
             if(damage1 > damage2){
                 log.append("\t"+player1+" wins the round! ").append(card1.getName()).append(" "+damage1).append(" defeats ").append(card2.getName()).append(" "+damage2).append("\n");
